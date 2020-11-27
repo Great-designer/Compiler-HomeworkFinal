@@ -3,10 +3,10 @@
 #include<string.h>
 #include<stdlib.h>
 
-char token[2048];//存储当前字符串常量（44），或者标识符（51）
-int num;//无符号整数（41，语法分析中允许取反） 
-double dou;//无符号浮点数（42，语法分析中允许取反） 
-char ch;//字符常量（43） 
+char token[2048];//当前字符串常量（44），或者标识符（51）
+int num;//当前无符号整数（41，语法分析中允许取负） 
+double dou;//当前无符号浮点数（42，语法分析中允许取负） 
+char ch;//当前字符常量（43） 
 
 int reserver()//关键字表，共10个 
 {
@@ -463,29 +463,102 @@ int getToken()//返回下一个token的类别码，注释视为Token
 	return symbol;
 }
 
-int nextToken()//返回下一个token的类别码，注释不视为Token 
+//token为字符串（44）或标识符（51），都存储在token
+char tokenPre[2048];//预读的字符串常量（44），或者标识符（51）
+
+//token为整数（41）、浮点数（42）或字符常量（43），存储在num、dou和ch 
+int numPre;//无符号整数（41，语法分析中允许取负） 
+double douPre;//无符号浮点数（42，语法分析中允许取负） 
+char chPre;//字符常量（43） 
+
+//token为关键字、运算符和文档结尾（-1）的时候，直接看返回的编号即可
+int symPre;
+int preValid; 
+
+int nextToken()//返回下一个token的类别码，注释不视为Token。只要使用nextToken，上一个状态就丢弃了 
 {
-	int sym=getToken();
-	while(sym==-2)//发现注释，只好再读一个 
+	int sym;//待返回 
+	if(preValid==1)//执行过unreadToken。还原之前预读结果，并置valid为0
+	{
+		sym=symPre;
+		preValid=0;
+		switch(sym)
+		{
+			case 41://整数 
+				num=numPre;
+			break;
+			case 42://浮点数 
+				dou=douPre;
+			break;
+			case 43://字符 
+				ch=chPre;
+			break;
+			case 44://字符串 
+				strcpy(token,tokenPre);
+			break;
+			case 51://标识符 
+				strcpy(token,tokenPre);
+			break;
+			default://其他情况，什么都不用做 
+			break;
+		}
+	}
+	else//未执行unreadToken。读入并保存为暂时无效的预读结果 
 	{
 		sym=getToken();
+		while(sym==-2)//发现注释，只好再读一个 
+		{
+			sym=getToken();
+		}
+		symPre=sym;
+		switch(sym)
+		{
+			case 41://整数 
+				numPre=num;
+			break;
+			case 42://浮点数 
+				douPre=dou;
+			break;
+			case 43://字符 
+				chPre=ch;
+			break;
+			case 44://字符串 
+				strcpy(tokenPre,token);
+			break;
+			case 51://标识符 
+				strcpy(tokenPre,token);
+			break;
+			default://其他情况，什么都不用做 
+			break;
+		}
 	}
 	return sym;
 }
 
-//目前的情形：
-//token为关键字、运算符和文档结尾（-1）的时候，直接看返回的编号即可
-//token为整数（41）、浮点数（42）或字符常量（43），存储在num、dou和ch 
-//token为字符串（44）或标识符（51），都存储在token
-//对于41、42、43、44、51情形，需要找一个token栈表来存储它们，这样才能实现unreadToken功能
-//unreadToken，可以直接将token压入token栈表 
-//需要修改nextToken函数。如果token栈表中有token，就从栈表中取。token栈表清空了，才会继续getToken 
+void unreadToken()//将当前的情形压回栈中。至多只能保存一步预读情形，上一步丢失。禁止连续使用两次。
+{
+	if(preValid==1)//预读已经有效，证明当前位置在预读前，无法再回退 
+	{
+		exit(-1); 
+	}
+	else
+	{
+		preValid=1;//置预读为有效 
+	}
+}
 
-//实现了unreadToken，然后才能开始做语法分析 
+
+
+
+void init()//全局变量初始化 
+{
+	preValid=0;//预读无效 
+}
 
 int main(int argc,char *argv[])
 {
 	in=fopen(argv[1],"r");
+	init(); 
 	
 	fclose(in);
 	return 0;
