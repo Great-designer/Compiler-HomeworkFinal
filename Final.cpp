@@ -547,8 +547,145 @@ void unreadToken()//将当前的情形压回栈中。至多只能保存一步预读情形，上一步丢失。
 	}
 }
 
+//ty -> IDENT
+//必然为void（0）、int（1）或double（2）其一
+int ty()//类型：仍旧为标识符（51）。不做开头，不得预读
+{
+	int tok=nextToken();
+	if(tok!=51)
+	{
+		exit(-1);
+	}
+	if(strcmp(token,"void")==0)
+	{
+		return 0;
+	}
+	else if(strcmp(token,"int")==0)
+	{
+		return 1;
+	}
+	else if(strcmp(token,"double")==0)
+	{
+		return 2;
+	}
+	else
+	{
+		exit(-1);
+	}
+}
 
+//未完成 
+//expr -> operator_expr| negate_expr| assign_expr| as_expr| call_expr| literal_expr| ident_expr| group_expr
+void expr()//表达式，七种可能，需要预读下一层分类 
+{
+	
+}
 
+//未完成 
+//const_decl_stmt -> 'const' IDENT ':' ty '=' expr ';'
+void const_decl_stmt()//常量，以const（3）开头。规定开头调用前已经被读了，下一个默认是标识符（51）
+{
+	int tok=nextToken();
+	if(tok!=51)
+	{
+		exit(-1);
+	}
+	//此处应处理标识符（51）
+	int tok=nextToken();
+	if(tok!=28)//冒号 
+	{
+		exit(-1);
+	}
+	int typpp=ty();
+	
+	
+}
+
+//未完成 
+//let_decl_stmt -> 'let' IDENT ':' ty ('=' expr)? ';'
+void let_decl_stmt()//变量，以let（8）开头。规定开头调用前已经被读了，下一个默认是标识符（51）
+{
+	int tok=nextToken();
+	if(tok!=51)
+	{
+		exit(-1);
+	}
+	//此处应处理标识符（51）
+	int tok=nextToken();
+	if(tok!=28)//冒号 
+	{
+		exit(-1);
+	}
+	int typpp=ty();
+	//等于部分可以选择省略 
+	
+}
+
+//未完成 
+//function -> 'fn' IDENT '(' function_param_list? ')' '->' ty block_stmt
+//function_param_list -> function_param (',' function_param)*
+//function_param -> 'const'? IDENT ':' ty
+void function()//函数，以fn（6）开头。规定开头调用前已经被读了，下一个默认是标识符（51） 
+{
+	int tok=nextToken();
+	if(tok!=51)
+	{
+		exit(-1);
+	}
+	//此处应处理标识符（51）
+	int tok=nextToken();
+	if(tok!=23)//左小括号 
+	{
+		exit(-1);
+	}
+	
+	
+	
+}
+
+//program -> item*
+//item -> function | decl_stmt
+//decl_stmt -> let_decl_stmt | const_decl_stmt
+void program()//程序，必然是常量（3）、变量（8）或函数（6）
+{
+	int tok=nextToken();
+	if(tok==-1)
+	{
+		return;
+	}
+	if(tok!=3&&tok!=8&&tok!=6)
+	{
+		exit(-1);
+	}
+	while(tok==3||tok==8||tok==6)
+	{
+		if(tok==3)
+		{
+			const_decl_stmt();
+		}
+		else if(tok==8)
+		{
+			let_decl_stmt();
+		}
+		else if(tok==6)
+		{
+			function();
+		}
+		else
+		{
+			exit(-1);
+		}
+		tok=nextToken();
+	}
+	if(tok==-1)
+	{
+		return;
+	}
+	if(tok!=3&&tok!=8&&tok!=6)
+	{
+		exit(-1);
+	}
+}
 
 void init()//全局变量初始化 
 {
