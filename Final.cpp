@@ -574,14 +574,64 @@ int ty()//类型：仍旧为标识符（51）。不做开头，不得预读
 	}
 }
 
+// 运算符表达式 operator_expr、取反表达式 negate_expr 和类型转换表达式 as_expr 可以使用局部的算符优先文法
+
+
+// 运算符表达式，子表达式开头，有子表达式，这只处理算数运算符。运算符的两侧必须是相同类型的数据 
+// 优先级和顺序
+// * /	左到右
+// + -	左到右
+// operator_expr -> expr binary_operator expr
+// binary_operator -> '+' | '-' | '*' | '/' 
+
+
+// 类型转换表达式，子表达式开头，有子表达式，只会涉及到整数int和浮点数double之间的互相转换，将左侧表达式表示的值转换成右侧类型表示的值。优先级第二高 
+// as_expr -> expr 'as' ty
+
+// 以下五个最高 
+
+// 取反表达式，减号（31）开头，相反数，有子表达式 
+// negate_expr -> '-' expr
+
+// 括号表达式，开头左小括号（23），优先计算 
+// group_expr -> '(' expr ')'
+
+// 字面量表达式，开头（41）（42）（43）（44），只会在 putstr 调用中出现，语义是对应的全局常量的编号
+// literal_expr -> UINT_LITERAL | DOUBLE_LITERAL | STRING_LITERAL | CHAR_LITERAL
+
+// 标识符表达式，只有标识符（51）开头，后空。语义是标识符对应的局部或全局变量。标识符表达式的类型与标识符的类型相同
+// ident_expr -> IDENT
+
+// 函数调用表达式，标识符（51）开头，下一token左括号（23），有子表达式，由函数名和调用参数列表组成的表达式
+// 函数必须在调用前声明过，标准库中的函数在调用前不需要声明 
+// call_expr -> IDENT '(' call_param_list? ')'
+// call_param_list -> expr (',' expr)*
+
+
 //未完成 
 //expr -> operator_expr| negate_expr| assign_expr| as_expr| call_expr| literal_expr| ident_expr| group_expr
-void expr()//表达式，七种可能，需要预读下一层分类 
+void expr()//表达式，8种可能，需要预读下一层分类 
 {
 	
 }
 
-//未完成 
+// 未完成 
+// 造一条：比较运算符的运行结果是布尔类型，只能出现在 if 和 while 语句的条件表达式中。运算符的两侧必须是相同类型的数据 
+// 但是while和if里不止可以出现这个。相当于优先级最低，顺序左到右 
+// bool_expr -> expr '==' | '!=' | '<' | '>' | '<=' | '>=' expr
+void bool_expr()
+{
+	
+}
+
+// 赋值表达式和左值表达式，标识符（51）开头，有子表达式 ，值类型void，不能被使用。相当于优先级最低，顺序右到左 
+// assign_expr -> l_expr '=' expr
+// l_expr -> IDENT
+void assign_expr()
+{
+	
+}
+
 //const_decl_stmt -> 'const' IDENT ':' ty '=' expr ';'
 void const_decl_stmt()//常量，以const（3）开头。规定开头调用前已经被读了，下一个默认是标识符（51）
 {
@@ -591,17 +641,27 @@ void const_decl_stmt()//常量，以const（3）开头。规定开头调用前已经被读了，下一个
 		exit(-1);
 	}
 	//此处应处理标识符（51）
-	int tok=nextToken();
+	tok=nextToken();
 	if(tok!=28)//冒号 
 	{
 		exit(-1);
 	}
-	int typpp=ty();
-	
-	
+	int typpp=ty();//类型 
+	//此处应处理类型
+	tok=nextToken();
+	if(tok!=33)//等号 
+	{
+		exit(-1);
+	}
+	expr();//表达式
+	//此处应处理表达式 
+	tok=nextToken();
+	if(tok!=29)//分号 
+	{
+		exit(-1);
+	}
 }
 
-//未完成 
 //let_decl_stmt -> 'let' IDENT ':' ty ('=' expr)? ';'
 void let_decl_stmt()//变量，以let（8）开头。规定开头调用前已经被读了，下一个默认是标识符（51）
 {
@@ -611,14 +671,36 @@ void let_decl_stmt()//变量，以let（8）开头。规定开头调用前已经被读了，下一个默认
 		exit(-1);
 	}
 	//此处应处理标识符（51）
-	int tok=nextToken();
+	tok=nextToken();
 	if(tok!=28)//冒号 
 	{
 		exit(-1);
 	}
 	int typpp=ty();
-	//等于部分可以选择省略 
-	
+	//此处应处理类型
+	tok=nextToken();
+	if(tok==33)//等于部分可以选择省略
+	{
+		expr();
+		//此处应处理表达式 
+		tok=nextToken();
+		if(tok==29)
+		{
+			return;
+		}
+		else
+		{
+			exit(-1);
+		}
+	}
+	else if(tok==29)
+	{
+		return;
+	}
+	else
+	{
+		exit(-1);
+	}
 }
 
 //未完成 
@@ -633,7 +715,7 @@ void function()//函数，以fn（6）开头。规定开头调用前已经被读了，下一个默认是标识
 		exit(-1);
 	}
 	//此处应处理标识符（51）
-	int tok=nextToken();
+	tok=nextToken();
 	if(tok!=23)//左小括号 
 	{
 		exit(-1);
