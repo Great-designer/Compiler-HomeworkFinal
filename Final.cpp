@@ -8,7 +8,7 @@ int num;//当前无符号整数（41，语法分析中允许取负）
 double dou;//当前无符号浮点数（42，语法分析中允许取负） 
 char ch;//当前字符常量（43） 
 
-int reserver()//关键字表，共10个 
+int reser()//关键字表，共10个 
 {
 	if(strcmp(token,"as")==0)
 	{
@@ -75,7 +75,7 @@ int getToken()//返回下一个token的类别码，注释视为Token
 			cc=fgetc(in); 
 		}
 		ungetc(cc,in);//指针后退一个字符
-		int resultValue=reserver();//resultValue查找保留字的返回值 
+		int resultValue=reser();//resultValue查找保留字的返回值 
 		if(resultValue==0)//token中字符串为标识符 
 		{
 			symbol=51;
@@ -576,7 +576,6 @@ int ty()//类型：仍旧为标识符（51）。不做开头，不得预读
 
 // 运算符表达式 operator_expr、取反表达式 negate_expr 和类型转换表达式 as_expr 可以使用局部的算符优先文法
 
-
 // 运算符表达式，子表达式开头，有子表达式，这只处理算数运算符。运算符的两侧必须是相同类型的数据 
 // 优先级和顺序
 // * /	左到右
@@ -584,9 +583,8 @@ int ty()//类型：仍旧为标识符（51）。不做开头，不得预读
 // operator_expr -> expr binary_operator expr
 // binary_operator -> '+' | '-' | '*' | '/' 
 
-
 // 类型转换表达式，子表达式开头，有子表达式，只会涉及到整数int和浮点数double之间的互相转换，将左侧表达式表示的值转换成右侧类型表示的值。优先级第二高 
-// as_expr -> expr 'as' ty
+// as_expr -> expr 'as'（1） ty
 
 // 以下五个最高 
 
@@ -596,8 +594,10 @@ int ty()//类型：仍旧为标识符（51）。不做开头，不得预读
 // 括号表达式，开头左小括号（23），优先计算 
 // group_expr -> '(' expr ')'
 
-// 字面量表达式，开头（41）（42）（43）（44），只会在 putstr 调用中出现，语义是对应的全局常量的编号
-// literal_expr -> UINT_LITERAL | DOUBLE_LITERAL | STRING_LITERAL | CHAR_LITERAL
+//这三个视作整体 
+
+// 字面量表达式，开头（41）（42）
+// literal_expr -> UINT_LITERAL | DOUBLE_LITERAL
 
 // 标识符表达式，只有标识符（51）开头，后空。语义是标识符对应的局部或全局变量。标识符表达式的类型与标识符的类型相同
 // ident_expr -> IDENT
@@ -606,6 +606,21 @@ int ty()//类型：仍旧为标识符（51）。不做开头，不得预读
 // 函数必须在调用前声明过，标准库中的函数在调用前不需要声明 
 // call_expr -> IDENT '(' call_param_list? ')'
 // call_param_list -> expr (',' expr)*
+
+
+int aaa,bbb;//自变量。n代表不区分的非终结符
+
+//# ( + - * / ) 整数（41）和浮点数（42）同一类 
+int f[8]={0,0,2,2,4,4,5,5};//栈顶
+int g[8]={0,5,1,1,3,3,0,5};//读入
+
+//8a+b，共有6个非法状态 
+int error[7]={0,4,6,25,29,31,35};
+
+int translate()//符号翻译器，必须是上述7种符号才能进入翻译器 
+{
+	
+}
 
 
 //未完成 
@@ -631,6 +646,10 @@ void assign_expr()
 {
 	
 }
+
+// 补一条：字符串表达式和字符表达式 
+// STRING_LITERAL | CHAR_LITERAL
+// （43）（44），只会在 putstr 调用中出现，语义是对应的全局常量的编号
 
 //const_decl_stmt -> 'const' IDENT ':' ty '=' expr ';'
 void const_decl_stmt()//常量，以const（3）开头。规定开头调用前已经被读了，下一个默认是标识符（51）
