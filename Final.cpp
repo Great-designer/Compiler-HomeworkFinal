@@ -594,7 +594,7 @@ int ty()//类型：仍旧为标识符（51）。不做开头，不得预读
 // 括号表达式，开头左小括号（23），优先计算 
 // group_expr -> '(' expr ')'
 
-//这三个视作整体 
+// 这三个视作整体 
 
 // 字面量表达式，开头（41）（42）
 // literal_expr -> UINT_LITERAL | DOUBLE_LITERAL
@@ -610,42 +610,62 @@ int ty()//类型：仍旧为标识符（51）。不做开头，不得预读
 
 int aaa,bbb;//自变量。n代表不区分的非终结符
 
-//# ( + - * / ) 整数（41）和浮点数（42）同一类 
+//# ( + - * / ) 整数（41）和浮点数（42）同一类
+//#只能是分号;（29）或左大括号{（25），一定不是EOF 
 int f[8]={0,0,2,2,4,4,5,5};//栈顶
 int g[8]={0,5,1,1,3,3,0,5};//读入
 
-//未完成 
-//8a+b，共有6个非法状态 
-int error[7]={0,4,6,25,29,31,35};
+//8a+b，共有6个非法状态，5个特殊状态，1个调用状态（左标识符右左括号，为8*标识符7+1=57） 
+int error[6]={0,6,8,49,55,63};
+int special[5]={11,19,27,35,43}; 
 
-//未完成 
-int translate(char t)//符号翻译器，必须是上述7种符号才能进入翻译器 
+int translate(int t)//token翻译器，必须是上述7种符号才能进入翻译器，仅查表时用到 
 {
 	switch(t)
 	{
-		case '\0'://字符串的结尾，书上为sharp，C语言为0 
+		case '25'://左大括号 
 		{
 			return 0;
 		}
-		case '(':
+		case '29'://分号
+		{
+			return 0;
+		}
+		case '23'://左括号 
 		{
 			return 1;
 		}
-		case '+':
+		case '21'://加号 
 		{
 			return 2;
 		}
-		case '*':
+		case '31'://减号 
 		{
 			return 3;
 		}
-		case ')': 
+		case '22'://乘号 
 		{
 			return 4;
 		}
-		case 'i':
+		case '32'://除号 
 		{
 			return 5;
+		}
+		case '24'://右括号 
+		{
+			return 6;
+		}
+		case '41'://整数 
+		{
+			return 7;
+		}
+		case '42'://浮点数 
+		{
+			return 7;
+		}
+		case '51'://标识符 
+		{
+			return 7;
 		}
 		default://非法读入报错 
 		{
@@ -654,20 +674,20 @@ int translate(char t)//符号翻译器，必须是上述7种符号才能进入翻译器
 	}
 }
 
-//未完成 
 int expstack[2048];
 int expstacktop;//expstacktop总指向栈顶元素的下一个位置，即expstacktop-1才是栈顶元素 
 
-char cqc[2048];
-int cqctop;//cqctop总指向下一个要读的字符 
+//char cqc[2048];
+//int cqctop;//cqctop总指向下一个要读的字符 
 
+//读进来的非终结符记作-2。总共只有e+e、e-e、e*e、e/e、(e)、整数（41）、浮点数（42）和标识符（51）五种可能 
 int merging()//返回expstacktop应该减去的值 
 {
 	if(expstacktop==0)//栈为空 
 	{
 		return -1;
 	}
-	if(expstack[expstacktop-1]==5)//i，5
+	if(expstack[expstacktop-1]==41||expstack[expstacktop-1]==42||expstack[expstacktop-1]==51)//整数（41）、浮点数（42）和标识符（51）
 	{
 		return 1;
 	}
@@ -675,15 +695,23 @@ int merging()//返回expstacktop应该减去的值
 	{
 		return -1;
 	}
-	if(expstack[expstacktop-1]==6&&expstack[expstacktop-2]==2&&expstack[expstacktop-3]==6)//E+T，626
+	if(expstack[expstacktop-1]==-2&&expstack[expstacktop-2]==21&&expstack[expstacktop-3]==-2)//e+e，626
 	{
 		return 3;
 	}
-	if(expstack[expstacktop-1]==6&&expstack[expstacktop-2]==3&&expstack[expstacktop-3]==6)//T*F，636
+	if(expstack[expstacktop-1]==-2&&expstack[expstacktop-2]==31&&expstack[expstacktop-3]==-2)//e-e，626
 	{
 		return 3;
 	}
-	if(expstack[expstacktop-1]==4&&expstack[expstacktop-2]==6&&expstack[expstacktop-3]==1)//(E)，164
+	if(expstack[expstacktop-1]==-2&&expstack[expstacktop-2]==22&&expstack[expstacktop-3]==-2)//e*e，636
+	{
+		return 3;
+	}
+	if(expstack[expstacktop-1]==-2&&expstack[expstacktop-2]==32&&expstack[expstacktop-3]==-2)//e/e，636
+	{
+		return 3;
+	}
+	if(expstack[expstacktop-1]==24&&expstack[expstacktop-2]==-2&&expstack[expstacktop-3]==23)//(e)，164
 	{
 		return 3;
 	}
@@ -694,17 +722,17 @@ int merging()//返回expstacktop应该减去的值
 //expr -> operator_expr| negate_expr| assign_expr| as_expr| call_expr| literal_expr| ident_expr| group_expr
 void expr()//表达式，8种可能，需要预读下一层分类。expr有可能调用expr，因此它涉及的全局变量需要改为申请 
 {
-	fscanf(in,"%s",cqc);
-	cqctop=0;
+//	fscanf(in,"%s",cqc);
+//	cqctop=0;
 	expstacktop=0;
 	while(1)//减少用else，每个分支末尾尽可能continue或者break
 	{
-		if(cqctop==-1)//已经读过文件尾了
+//		if(cqctop==-1)//已经读过文件尾了
 		{
 			printf("E\n");//读入出错时输出E 
 			break;
 		}
-		bbb=translate(cqc[cqctop]);//读入不一定合法
+//		bbb=translate(cqc[cqctop]);//读入不一定合法
 		if(bbb==-1)
 		{
 			printf("E\n");//读入出错时输出E 
@@ -766,14 +794,14 @@ void expr()//表达式，8种可能，需要预读下一层分类。expr有可能调用expr，因此它涉及
 		}
 		expstack[expstacktop]=bbb;
 		expstacktop++;
-		if(cqc[cqctop]!='\0')//没读入文件尾字符的时候才要报读入 
+//		if(cqc[cqctop]!='\0')//没读入文件尾字符的时候才要报读入 
 		{
-			printf("I%c\n",cqc[cqctop]);
-			cqctop++;
+//			printf("I%c\n",cqc[cqctop]);
+//			cqctop++;
 		}
 		else
 		{
-			cqctop=-1;//已经读过文件尾了 
+//			cqctop=-1;//已经读过文件尾了 
 		}
 	}
 }
