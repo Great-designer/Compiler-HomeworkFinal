@@ -583,29 +583,18 @@ int ty()//类型：仍旧为标识符（51）。不做开头，不得预读
 // operator_expr -> expr binary_operator expr
 // binary_operator -> '+' | '-' | '*' | '/' 
 
-// 类型转换表达式，子表达式开头，有子表达式，只会涉及到整数int和浮点数double之间的互相转换，将左侧表达式表示的值转换成右侧类型表示的值。优先级第二高 
-// as_expr -> expr 'as'（1） ty
-
-// 以下五个最高 
-
-// 取反表达式，减号（31）开头，相反数，有子表达式 
-// negate_expr -> '-' expr
+// 以下最高 
 
 // 括号表达式，开头左小括号（23），优先计算 
 // group_expr -> '(' expr ')'
 
-// 这三个视作整体 
+// 以下视作整体 
 
 // 字面量表达式，开头（41）（42）
 // literal_expr -> UINT_LITERAL | DOUBLE_LITERAL
 
 // 标识符表达式，只有标识符（51）开头，后空。语义是标识符对应的局部或全局变量。标识符表达式的类型与标识符的类型相同
 // ident_expr -> IDENT
-
-// 函数调用表达式，标识符（51）开头，下一token左括号（23），有子表达式，由函数名和调用参数列表组成的表达式
-// 函数必须在调用前声明过，标准库中的函数在调用前不需要声明 
-// call_expr -> IDENT '(' call_param_list? ')'
-// call_param_list -> expr (',' expr)*
 
 //# ( + - * / ) 整数（41）和浮点数（42）同一类
 //#只能是分号;（29）或左大括号{（25），一定不是EOF 
@@ -629,6 +618,30 @@ int translate(int t)//token翻译器，必须是上述7种符号才能进入翻译器，仅查表时用到
 			return 0;
 		}
 		case '29'://分号
+		{
+			return 0;
+		}
+		case '30'://不等于号
+		{
+			return 0;
+		}
+		case '34'://小于号
+		{
+			return 0;
+		}
+		case '35'://大于号
+		{
+			return 0;
+		}
+		case '37'://等于等于号
+		{
+			return 0;
+		}
+		case '38'://小于等于号
+		{
+			return 0;
+		}
+		case '39'://大于等于号
 		{
 			return 0;
 		}
@@ -713,37 +726,30 @@ int merging(int expstack[],int expstacktop)//返回expstacktop应该减去的值
 	return -1;
 }
 
-void expr();
+//四个特判 
 
-void call_param_list()//已经读过了ident和左括号 
-{
-	expr(); 
-	int next=nextToken();
-	while(next!=24)//右括号结束，逗号表示没结束
-	{
-		if(next==27)
-		{
-			expr(); 
-		}
-		else
-		{
-			exit(-1);
-		}
-		next=nextToken();//右括号被读了 
-	}
-}
+// 取反表达式，减号（31）开头，相反数，有子表达式 
+// negate_expr -> '-' expr
+
+// 类型转换表达式，子表达式开头，有子表达式，只会涉及到整数int和浮点数double之间的互相转换，将左侧表达式表示的值转换成右侧类型表示的值。优先级第二高 
+// as_expr -> expr 'as'（1） ty
+
+// 函数调用表达式，标识符（51）开头，下一token左括号（23），有子表达式，由函数名和调用参数列表组成的表达式
+// 函数必须在调用前声明过，标准库中的函数在调用前不需要声明 
+// call_expr -> IDENT '(' call_param_list? ')'
+// call_param_list -> expr (',' expr)*
+
+// 赋值表达式和左值表达式，标识符（51）开头，有子表达式 ，值类型void，不能被使用。相当于优先级最低，顺序右到左 
+// assign_expr -> l_expr '=' expr
+// l_expr -> IDENT
 
 //expr -> operator_expr| negate_expr| as_expr| call_expr| literal_expr| ident_expr| group_expr
-void expr()//表达式，7种可能。expr有可能调用expr，因此它涉及的全局变量需要改为申请。开头不得预读。 
+void expr()//表达式，7种可能，含赋值表达式即8种可能。expr有可能调用expr，因此它涉及的全局变量需要改为申请。开头不得预读。 
 {
 	int aaa,bbb;//自变量。n代表不区分的非终结符，为-2 
 	int *expstack=(int *)malloc(sizeof(int)*2048);//栈里面永远是标准编号 
 	int expstacktop=0;//expstacktop总指向栈顶元素的下一个位置，即expstacktop-1才是栈顶元素 
 	int next=nextToken();//读入
-	if(next==1)//as是特殊字符，读入as的时候特判 
-	{
-		exit(-1);//这时候肯定不对 
-	}
 	while(1)//减少用else，每个分支末尾尽可能continue或者break
 	{
 		bbb=translate(next);//读入不一定合法
@@ -828,7 +834,20 @@ void expr()//表达式，7种可能。expr有可能调用expr，因此它涉及的全局变量需要改为申
 			}
 			if(count==57)//标识符加左括号。这时候应当触发函数调用
 			{
-				call_param_list();//触发函数调用。结束后右括号已经被读了 
+				expr();//已经读过了ident和左括号 
+				int next=nextToken();//触发函数调用。结束后右括号已经被读了
+				while(next!=24)//右括号结束，逗号表示没结束
+				{
+					if(next==27)
+					{
+						expr(); 
+					}
+					else
+					{
+						exit(-1);
+					}
+					next=nextToken();//右括号被读了 
+				}
 				int rr=merging();
 				if(rr==-1)
 				{
@@ -855,6 +874,19 @@ void expr()//表达式，7种可能。expr有可能调用expr，因此它涉及的全局变量需要改为申
 		expstack[expstacktop]=next;//压入标准序号，应为next 
 		expstacktop++;//压入标准序号
 		next=nextToken();//读一个 
+		if(next==33)
+		{
+			if(expstacktop==1&&expstack[expstacktop-1]==51)//栈里面只有一个IDENT就对了 
+			{
+				expr();//此时读过了IDENT和等号，剩余的部分刚好是一个expr
+				//此处处理赋值 
+				break; 
+			}
+			else
+			{
+				exit(-1);
+			}
+		}
 		while(next==1)//读入as的时候特判。根据优先级，栈顶应该必须是非终结符、标识符类或者右括号
 		{
 			if(expstack[expstacktop-1]==24||expstack[expstacktop-1]==41||expstack[expstacktop-1]==42||expstack[expstacktop-1]==51)//右括号，整型，浮点，标识符
@@ -876,7 +908,7 @@ void expr()//表达式，7种可能。expr有可能调用expr，因此它涉及的全局变量需要改为申
 			//此处应当先处理as情形 
 			next=nextToken();//再读一个，看还是不是1 
 		}
-		if(next==25||next==27||next==29)//读入了尾字符的时候，不能再读了 
+		if(next==25||next==27||next==29||next==30||next==34||next==35||next==37||next==38||next==39)//读入了尾字符的时候，不能再读了 
 		{
 			unreadToken();//此时会倒退一个。但是next保持为0，然后由于continue，此分支将无法进入 
 		}
@@ -884,21 +916,21 @@ void expr()//表达式，7种可能。expr有可能调用expr，因此它涉及的全局变量需要改为申
 	free(expstack);
 }
 
-// 未完成 
 // 造一条：比较运算符的运行结果是布尔类型，只能出现在 if 和 while 语句的条件表达式中。运算符的两侧必须是相同类型的数据 
 // 但是while和if里不止可以出现这个。相当于优先级最低，顺序左到右 
 // bool_expr -> expr '==' | '!=' | '<' | '>' | '<=' | '>=' expr
 void bool_expr()
 {
-	
-}
-
-// 赋值表达式和左值表达式，标识符（51）开头，有子表达式 ，值类型void，不能被使用。相当于优先级最低，顺序右到左 
-// assign_expr -> l_expr '=' expr
-// l_expr -> IDENT
-void assign_expr()
-{
-	
+	expr();
+	int next=nextToken();
+	if(next==30||next==34||next==35||next==37||next==38||next==39)//可能是就一个表达式 
+	{
+		expr();
+	}
+	else
+	{
+		unreadToken();
+	}
 }
 
 // 补一条：字符串表达式和字符表达式 
