@@ -607,9 +607,6 @@ int ty()//类型：仍旧为标识符（51）。不做开头，不得预读
 // call_expr -> IDENT '(' call_param_list? ')'
 // call_param_list -> expr (',' expr)*
 
-
-int aaa,bbb;//自变量。n代表不区分的非终结符
-
 //# ( + - * / ) 整数（41）和浮点数（42）同一类
 //#只能是分号;（29）或左大括号{（25），一定不是EOF 
 int f[8]={0,0,2,2,4,4,5,5};//栈顶
@@ -624,6 +621,10 @@ int translate(int t)//token翻译器，必须是上述7种符号才能进入翻译器，仅查表时用到
 	switch(t)
 	{
 		case '25'://左大括号 
+		{
+			return 0;
+		}
+		case '27'://逗号
 		{
 			return 0;
 		}
@@ -674,14 +675,8 @@ int translate(int t)//token翻译器，必须是上述7种符号才能进入翻译器，仅查表时用到
 	}
 }
 
-int expstack[2048];
-int expstacktop;//expstacktop总指向栈顶元素的下一个位置，即expstacktop-1才是栈顶元素 
-
-//char cqc[2048];
-//int cqctop;//cqctop总指向下一个要读的字符 
-
 //读进来的非终结符记作-2。总共只有e+e、e-e、e*e、e/e、(e)、整数（41）、浮点数（42）和标识符（51）五种可能 
-int merging()//返回expstacktop应该减去的值 
+int merging(int expstack[],int expstacktop)//返回expstacktop应该减去的值 
 {
 	if(expstacktop==0)//栈为空 
 	{
@@ -695,120 +690,199 @@ int merging()//返回expstacktop应该减去的值
 	{
 		return -1;
 	}
-	if(expstack[expstacktop-1]==-2&&expstack[expstacktop-2]==21&&expstack[expstacktop-3]==-2)//e+e，626
+	if(expstack[expstacktop-1]==-2&&expstack[expstacktop-2]==21&&expstack[expstacktop-3]==-2)//e+e
 	{
 		return 3;
 	}
-	if(expstack[expstacktop-1]==-2&&expstack[expstacktop-2]==31&&expstack[expstacktop-3]==-2)//e-e，626
+	if(expstack[expstacktop-1]==-2&&expstack[expstacktop-2]==31&&expstack[expstacktop-3]==-2)//e-e
 	{
 		return 3;
 	}
-	if(expstack[expstacktop-1]==-2&&expstack[expstacktop-2]==22&&expstack[expstacktop-3]==-2)//e*e，636
+	if(expstack[expstacktop-1]==-2&&expstack[expstacktop-2]==22&&expstack[expstacktop-3]==-2)//e*e
 	{
 		return 3;
 	}
-	if(expstack[expstacktop-1]==-2&&expstack[expstacktop-2]==32&&expstack[expstacktop-3]==-2)//e/e，636
+	if(expstack[expstacktop-1]==-2&&expstack[expstacktop-2]==32&&expstack[expstacktop-3]==-2)//e/e
 	{
 		return 3;
 	}
-	if(expstack[expstacktop-1]==24&&expstack[expstacktop-2]==-2&&expstack[expstacktop-3]==23)//(e)，164
+	if(expstack[expstacktop-1]==24&&expstack[expstacktop-2]==-2&&expstack[expstacktop-3]==23)//(e)
 	{
 		return 3;
 	}
 	return -1;
 }
 
-//未完成 
-//expr -> operator_expr| negate_expr| assign_expr| as_expr| call_expr| literal_expr| ident_expr| group_expr
-void expr()//表达式，8种可能，需要预读下一层分类。expr有可能调用expr，因此它涉及的全局变量需要改为申请 
+void expr();
+
+void call_param_list()//已经读过了ident和左括号 
 {
-//	fscanf(in,"%s",cqc);
-//	cqctop=0;
-	expstacktop=0;
+	expr(); 
+	int next=nextToken();
+	while(next!=24)//右括号结束，逗号表示没结束
+	{
+		if(next==27)
+		{
+			expr(); 
+		}
+		else
+		{
+			exit(-1);
+		}
+		next=nextToken();//右括号被读了 
+	}
+}
+
+//expr -> operator_expr| negate_expr| as_expr| call_expr| literal_expr| ident_expr| group_expr
+void expr()//表达式，7种可能。expr有可能调用expr，因此它涉及的全局变量需要改为申请。开头不得预读。 
+{
+	int aaa,bbb;//自变量。n代表不区分的非终结符，为-2 
+	int *expstack=(int *)malloc(sizeof(int)*2048);//栈里面永远是标准编号 
+	int expstacktop=0;//expstacktop总指向栈顶元素的下一个位置，即expstacktop-1才是栈顶元素 
+	int next=nextToken();//读入
+	if(next==1)//as是特殊字符，读入as的时候特判 
+	{
+		exit(-1);//这时候肯定不对 
+	}
 	while(1)//减少用else，每个分支末尾尽可能continue或者break
 	{
-//		if(cqctop==-1)//已经读过文件尾了
-		{
-			printf("E\n");//读入出错时输出E 
-			break;
-		}
-//		bbb=translate(cqc[cqctop]);//读入不一定合法
+		bbb=translate(next);//读入不一定合法
 		if(bbb==-1)
 		{
-			printf("E\n");//读入出错时输出E 
-			break;
+			exit(-1);//出错
 		}
 		if(expstacktop!=0)//栈非空
 		{
 			aaa=expstack[expstacktop-1];//此时栈顶一定是合法字符的整数 
-			if(aaa==6)//栈顶是非终结符
+			if(aaa==-2)//栈顶是非终结符
 			{
-				if(expstacktop==1)
+				if(expstacktop==1)//栈里只有一个元素 
 				{
 					aaa=0;//表示前一个位置应该是sharp 
 				}
 				else
 				{
 					aaa=expstack[expstacktop-2];
-					if(aaa==6)//每一步非终结符都不能相邻，再前面一个应该是终结符才对 
+					if(aaa==-2)//每一步非终结符都不能相邻，再前面一个应该是终结符才对 
 					{
-						printf("E\n");//违反规则时输出E  
-						break;
+						exit(-1);//违反规则
+					}
+					else
+					{
+						aaa=translate(aaa);//一定合法 
 					}
 				}
 			}
-			if(aaa==0&&bbb==0&&expstack[expstacktop-1]==6&&expstacktop==1)//整个程序顺利结束 
+			else
+			{
+				aaa=translate(aaa);//一定合法 
+			}
+			if(aaa==0&&bbb==0&&expstack[expstacktop-1]==-2&&expstacktop==1)//整个程序顺利结束 
 			{
 				break;
 			}
-			int count=6*aaa+bbb;//查错误表 
-			int flag=0;//暂存
-			int i;
-			for(i=0;i<7;i++)
+			if(aaa==0&&next==24&&expstack[expstacktop-1]==-2&&expstacktop==1)//栈只剩下一个非终结符号，但是读入是右括号。由于被list调用，这是可能的 
 			{
-				if(count==error[i])
+				unreadToken();//把右括号退回去。前面的情形已经退过了 
+				break;
+			}
+			int count=8*aaa+bbb;//查错误表 
+			int flag=0;//置一个特殊减号处理标记 
+			int i;
+			for(i=0;i<5;i++)//先查5个special
+			{
+				if(count==special[i])//处理特殊减号 
 				{
-					printf("E\n");//无法判断优先级关系时输出E
-					flag=1;
-					break;//这个break没有跳出while
+					if(expstack[expstacktop-1]!=-2)//栈一定不是空的。仅当前面没有非终结符才是特殊减号 
+					{
+						flag=1;//置入特殊减号标记 
+					}
 				}
 			}
 			if(flag==1)
 			{
-				break;//这里break才能跳出while
+				while(flag==1)//处理特殊减号，只有预读下一个 
+				{
+					next=nextToken();//读入。
+					if(next!=31)
+					{
+						flag=0;//连续减号结束 
+					}
+				}//根据优先级，后面的合法情形只能是括号，函数调用或者标识符，而其他的一定是不对的 
+				if(next==23||next==41||next==42||next==51)//左括号，整型，浮点，标识符或者函数调用
+				{
+					bbb=translate(next);//重新计算读入值 
+					count=8*aaa+bbb;//重新计算错误表 
+				}
+				else
+				{
+					exit(-1);
+				}
 			}
-			if(f[aaa]>g[bbb])//仅大于的时候才规约，其他时候读入 
+			for(i=0;i<6;i++)//再查6个错误 
+			{
+				if(count==error[i])
+				{
+					exit(-1);//无法判断优先级关系
+				}
+			}
+			if(count==57)//标识符加左括号。这时候应当触发函数调用
+			{
+				call_param_list();//触发函数调用。结束后右括号已经被读了 
+				int rr=merging();
+				if(rr==-1)
+				{
+					exit(-1);//规约失败
+				}
+				expstacktop-=rr;//规约成功弹栈 
+				expstack[expstacktop]=-2;//压入非终结符号 
+				expstacktop++;//压入非终结符号 
+				continue;//仅规约跳过最后读入部分 
+			}
+			if(f[aaa]>g[bbb])//仅大于的时候才规约，其他时候读入。仅规约跳过最后读入部分 
 			{
 				int rr=merging();
 				if(rr==-1)
 				{
-					printf("RE\n");//规约失败时输出RE 
-					break;
+					exit(-1);//规约失败
 				}
-				printf("R\n");//规约成功时输出R
-				expstacktop-=rr;
-				expstack[expstacktop]=6;//非终结符号 
-				expstacktop++;
-				continue;
+				expstacktop-=rr;//规约成功弹栈 
+				expstack[expstacktop]=-2;//压入非终结符号 
+				expstacktop++;//压入非终结符号 
+				continue;//仅规约跳过最后读入部分 
 			}
 		}
-		expstack[expstacktop]=bbb;
-		expstacktop++;
-//		if(cqc[cqctop]!='\0')//没读入文件尾字符的时候才要报读入 
+		expstack[expstacktop]=next;//压入标准序号，应为next 
+		expstacktop++;//压入标准序号
+		next=nextToken();//读一个 
+		while(next==1)//读入as的时候特判。根据优先级，栈顶应该必须是非终结符、标识符类或者右括号
 		{
-//			printf("I%c\n",cqc[cqctop]);
-//			cqctop++;
+			if(expstack[expstacktop-1]==24||expstack[expstacktop-1]==41||expstack[expstacktop-1]==42||expstack[expstacktop-1]==51)//右括号，整型，浮点，标识符
+			{
+				int rr=merging();//先规约 
+				if(rr==-1)
+				{
+					exit(-1);//规约失败
+				}
+				expstacktop-=rr;//规约成功弹栈 
+				expstack[expstacktop]=-2;//压入非终结符号 
+				expstacktop++;//压入非终结符号 
+			}
+			if(expstack[expstacktop-1]!=-2)//不是非终结符 
+			{
+				exit(-1);//则退出 
+			}
+			int tyty=ty();//读入
+			//此处应当先处理as情形 
+			next=nextToken();//再读一个，看还是不是1 
 		}
-		else
+		if(next==25||next==27||next==29)//读入了尾字符的时候，不能再读了 
 		{
-//			cqctop=-1;//已经读过文件尾了 
+			unreadToken();//此时会倒退一个。但是next保持为0，然后由于continue，此分支将无法进入 
 		}
 	}
+	free(expstack);
 }
-
-
-	
-
 
 // 未完成 
 // 造一条：比较运算符的运行结果是布尔类型，只能出现在 if 和 while 语句的条件表达式中。运算符的两侧必须是相同类型的数据 
