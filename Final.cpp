@@ -590,7 +590,7 @@ int ty()//¿‡–Õ£∫»‘æ…Œ™±Í ∂∑˚£®51£©°£≤ª◊ˆø™Õ∑£¨≤ªµ√‘§∂¡
 
 // “‘œ¬ ”◊˜’˚ÃÂ 
 
-// ◊÷√Ê¡ø±Ì¥Ô Ω£¨ø™Õ∑£®41£©£®42£©
+// ◊÷√Ê¡ø±Ì¥Ô Ω£¨ø™Õ∑’˚ ˝£®41£©∏°µ„ ˝£®42£©
 // literal_expr -> UINT_LITERAL | DOUBLE_LITERAL
 
 // ±Í ∂∑˚±Ì¥Ô Ω£¨÷ª”–±Í ∂∑˚£®51£©ø™Õ∑£¨∫Ûø’°£”Ô“Â «±Í ∂∑˚∂‘”¶µƒæ÷≤øªÚ»´æ÷±‰¡ø°£±Í ∂∑˚±Ì¥Ô Ωµƒ¿‡–Õ”Î±Í ∂∑˚µƒ¿‡–Õœ‡Õ¨
@@ -743,8 +743,10 @@ int merging(int expstack[],int expstacktop)//∑µªÿexpstacktop”¶∏√ºı»•µƒ÷µ
 // assign_expr -> l_expr '=' expr
 // l_expr -> IDENT
 
+//±Ì¥Ô Ω£¨7÷÷ø…ƒ‹£¨∫¨∏≥÷µ±Ì¥Ô Ωº¥8÷÷ø…ƒ‹°£expr”–ø…ƒ‹µ˜”√expr£¨“Ú¥ÀÀ¸…Êº∞µƒ»´æ÷±‰¡ø–Ë“™∏ƒŒ™…Í«Î°£
+//ø™Õ∑Œ™±Í ∂∑˚£®51£©°¢ºı∫≈£®31£©°¢◊Û–°¿®∫≈£®23£©°¢’˚ ˝£®41£©∫Õ∏°µ„ ˝£®42£©£¨≤ªµ√‘§∂¡°£
 //expr -> operator_expr| negate_expr| as_expr| call_expr| literal_expr| ident_expr| group_expr
-void expr()//±Ì¥Ô Ω£¨7÷÷ø…ƒ‹£¨∫¨∏≥÷µ±Ì¥Ô Ωº¥8÷÷ø…ƒ‹°£expr”–ø…ƒ‹µ˜”√expr£¨“Ú¥ÀÀ¸…Êº∞µƒ»´æ÷±‰¡ø–Ë“™∏ƒŒ™…Í«Î°£ø™Õ∑≤ªµ√‘§∂¡°£ 
+void expr()
 {
 	int aaa,bbb;//◊‘±‰¡ø°£n¥˙±Ì≤ª«¯∑÷µƒ∑«÷’Ω·∑˚£¨Œ™-2 
 	int *expstack=(int *)malloc(sizeof(int)*2048);//’ª¿Ô√Ê”¿‘∂ «±Í◊º±‡∫≈ 
@@ -838,7 +840,7 @@ void expr()//±Ì¥Ô Ω£¨7÷÷ø…ƒ‹£¨∫¨∏≥÷µ±Ì¥Ô Ωº¥8÷÷ø…ƒ‹°£expr”–ø…ƒ‹µ˜”√expr£¨“Ú¥ÀÀ¸…
 				int next=nextToken();//¥•∑¢∫Ø ˝µ˜”√°£Ω· ¯∫Û”“¿®∫≈“—æ≠±ª∂¡¡À
 				while(next!=24)//”“¿®∫≈Ω· ¯£¨∂∫∫≈±Ì æ√ªΩ· ¯
 				{
-					if(next==27)
+					if(next==27)//∂∫∫≈ 
 					{
 						expr(); 
 					}
@@ -937,8 +939,21 @@ void bool_expr()
 // STRING_LITERAL | CHAR_LITERAL
 // £®43£©£®44£©£¨÷ªª·‘⁄ putstr µ˜”√÷–≥ˆœ÷£¨”Ô“Â «∂‘”¶µƒ»´æ÷≥£¡øµƒ±‡∫≈
 
+//±Ì¥Ô Ω”Ôæ‰£¨ø™Õ∑Œ™◊Û–°¿®∫≈£®23£©°¢ºı∫≈£®31£©°¢±Í ∂∑˚£®51£©°¢’˚ ˝£®41£©∫Õ∏°µ„ ˝£®42£©£¨≤ªµ√‘§∂¡°£
+//expr_stmt -> expr ';'
+void expr_stmt()
+{
+	expr();
+	int next=nextToken();
+	if(next!=29)//∑÷∫≈ 
+	{
+		exit(-1);
+	}
+}
+
+//≥£¡ø”Ôæ‰£¨“‘const£®3£©ø™Õ∑°£πÊ∂®ø™Õ∑µ˜”√«∞“—æ≠±ª∂¡¡À£¨œ¬“ª∏ˆƒ¨»œ «±Í ∂∑˚£®51£©
 //const_decl_stmt -> 'const' IDENT ':' ty '=' expr ';'
-void const_decl_stmt()//≥£¡ø£¨“‘const£®3£©ø™Õ∑°£πÊ∂®ø™Õ∑µ˜”√«∞“—æ≠±ª∂¡¡À£¨œ¬“ª∏ˆƒ¨»œ «±Í ∂∑˚£®51£©
+void const_decl_stmt()
 {
 	int tok=nextToken();
 	if(tok!=51)
@@ -967,8 +982,9 @@ void const_decl_stmt()//≥£¡ø£¨“‘const£®3£©ø™Õ∑°£πÊ∂®ø™Õ∑µ˜”√«∞“—æ≠±ª∂¡¡À£¨œ¬“ª∏ˆ
 	}
 }
 
+//±‰¡ø£¨“‘let£®8£©ø™Õ∑°£πÊ∂®ø™Õ∑µ˜”√«∞“—æ≠±ª∂¡¡À£¨œ¬“ª∏ˆƒ¨»œ «±Í ∂∑˚£®51£©
 //let_decl_stmt -> 'let' IDENT ':' ty ('=' expr)? ';'
-void let_decl_stmt()//±‰¡ø£¨“‘let£®8£©ø™Õ∑°£πÊ∂®ø™Õ∑µ˜”√«∞“—æ≠±ª∂¡¡À£¨œ¬“ª∏ˆƒ¨»œ «±Í ∂∑˚£®51£©
+void let_decl_stmt()
 {
 	int tok=nextToken();
 	if(tok!=51)
@@ -1008,32 +1024,216 @@ void let_decl_stmt()//±‰¡ø£¨“‘let£®8£©ø™Õ∑°£πÊ∂®ø™Õ∑µ˜”√«∞“—æ≠±ª∂¡¡À£¨œ¬“ª∏ˆƒ¨»œ
 	}
 }
 
-//Œ¥ÕÍ≥… 
+void stmt();
+
+//block”Ôæ‰£¨“‘◊Û¥Û¿®∫≈£®25£©ø™Õ∑£¨≤ªµ√‘§∂¡ 
+//block_stmt -> '{' stmt* '}'
+void block_stmt()
+{
+	int next=nextToken();
+	if(next!=25)
+	{
+		exit(-1);
+	}
+	next=nextToken();
+	while(next!=26)//”“¥Û¿®∫≈ 
+	{
+		stmt();//¡„¥ŒªÚ∂‡¥Œ 
+		next=nextToken();
+	}
+}
+
+//if”Ôæ‰£¨“‘if£®7£©ø™Õ∑£¨µ˜”√bool±Ì¥Ô Ω°£ø™Õ∑±ª‘§∂¡ 
+//if_stmt -> 'if' expr block_stmt ('else' 'if' expr block_stmt)* ('else' block_stmt)?
+void if_stmt()
+{
+	bool_expr();
+	int next=nextToken();//¡„¥ŒªÚ∂‡¥Œµƒelseif£¨¡„¥ŒªÚ“ª¥Œµƒelse 
+	while(next==5) 
+	{
+		next=nextToken();
+		if(next==7)//»‘æ…ø…ƒ‹ «if
+		{
+			bool_expr();
+			block_stmt(); 
+			next=nextToken();//‘Ÿ∂¡“ª∏ˆ 
+		}
+		else if(next==25)//÷±Ω”block¡À 
+		{
+			unreadToken();//block≤ªµ√‘§∂¡ 
+			block_stmt();
+			next=nextToken();//‘Ÿ∂¡“ª∏ˆ£¨ƒ©Œ≤ªÿÕÀ
+			break; 
+		}
+	}
+	unreadToken();//ƒ©Œ≤“ª∂®ªÿÕÀ 
+}
+
+//while”Ôæ‰£¨“‘while£®10£©ø™Õ∑£¨µ˜”√bool±Ì¥Ô Ω°£ø™Õ∑±ª‘§∂¡ 
+//while_stmt -> 'while' expr block_stmt
+void while_stmt()
+{
+	bool_expr();
+	block_stmt();
+}
+
+//return”Ôæ‰£¨“‘return£®9£©ø™Õ∑ 
+//return_stmt -> 'return' expr? ';'
+
+//break”Ôæ‰£¨“‘break£®2£©ø™Õ∑ 
+//break_stmt -> 'break' ';'
+
+//continue”Ôæ‰£¨“‘continue£®4£©ø™Õ∑ 
+//continue_stmt -> 'continue' ';'
+
+//ø’”Ôæ‰£¨“‘∑÷∫≈£®29£©ø™Õ∑ 
+//empty_stmt -> ';'
+
+//”Ôæ‰£¨9÷÷«Èøˆ£®10÷÷«Èøˆ£©£¨≤ªµ√‘§∂¡ 
+//stmt ->expr_stmt£®23£©£®31£©£®41£©£®42£©£®51£©| decl_stmt| if_stmt£®7£©| while_stmt£®10£©| break_stmt£®2£©| continue_stmt£®4£©| return_stmt£®9£©| block_stmt£®25£©| empty_stmt£®29£©
+//decl_stmt -> let_decl_stmt£®8£© | const_decl_stmt£®3£© 
+void stmt()
+{
+	int next=nextToken();
+	switch(next)
+	{
+		case 3://≤ªªÿÕÀ 
+			const_decl_stmt();
+		break;
+		case 8://≤ªªÿÕÀ 
+			let_decl_stmt();
+		break;
+		case 7://≤ªªÿÕÀ 
+			if_stmt();
+		break;
+		case 10://≤ªªÿÕÀ 
+			while_stmt();
+		break;
+		case 29:// ≤√¥∂º≤ª◊ˆ 
+		break;
+		case 2://break
+			next=nextToken();//∑÷∫≈
+			if(next!=29)
+			{
+				exit(-1);
+			}
+		break;
+		case 4://continue
+			next=nextToken();//∑÷∫≈
+			if(next!=29)
+			{
+				exit(-1);
+			}
+		break;
+		case 9://return
+			next=nextToken();//∑÷∫≈ªÚexpr 
+			if(next!=29)
+			{
+				expr();
+				next=nextToken();//∑÷∫≈
+				if(next!=29)
+				{
+					exit(-1);
+				}
+			}
+		break;
+		case 25://block_stmt£¨ªÿÕÀ 
+			unreadToken();
+			block_stmt(); 
+		break;
+		case 23:
+			unreadToken();
+			expr(); 
+		break;
+		case 31:
+			unreadToken();
+			expr(); 
+		break;
+		case 41:
+			unreadToken();
+			expr(); 
+		break;
+		case 42:
+			unreadToken();
+			expr(); 
+		break;
+		case 51:
+			unreadToken();
+			expr(); 
+		break;
+		default:
+			exit(-1);
+		break; 
+	}
+}
+
+//function_param -> 'const'? IDENT ':' ty
+//≤Œ ˝¡–±ÌœÓ£¨const£®3£©ªÚIDENT£®51£©ø™Õ∑ 
+void function_param()
+{
+	int next=nextToken();
+	if(next==3)//‘ –Ì“ª∏ˆconst 
+	{
+		//¥À¥¶¥¶¿Ìconst
+		next=nextToken();
+	}
+	if(next!=51)//»‘æ…≤ª «IDENT 
+	{
+		exit(-1);
+	}
+	//¥À¥¶¥¶¿ÌIDENT
+	next=nextToken();
+	if(next!=28)//√∞∫≈
+	{
+		exit(-1);
+	}
+	int tyty=ty();
+	//¥À¥¶¥¶¿Ìty 
+}
+
 //function -> 'fn' IDENT '(' function_param_list? ')' '->' ty block_stmt
 //function_param_list -> function_param (',' function_param)*
-//function_param -> 'const'? IDENT ':' ty
 void function()//∫Ø ˝£¨“‘fn£®6£©ø™Õ∑°£πÊ∂®ø™Õ∑µ˜”√«∞“—æ≠±ª∂¡¡À£¨œ¬“ª∏ˆƒ¨»œ «±Í ∂∑˚£®51£© 
 {
-	int tok=nextToken();
-	if(tok!=51)
+	int next=nextToken();
+	if(next!=51)//±Í ∂∑˚ 
 	{
 		exit(-1);
 	}
 	//¥À¥¶”¶¥¶¿Ì±Í ∂∑˚£®51£©
-	tok=nextToken();
-	if(tok!=23)//◊Û–°¿®∫≈ 
+	next=nextToken();
+	if(next!=23)//◊Û–°¿®∫≈ 
 	{
 		exit(-1);
 	}
-	
-	
-	
+	next=nextToken();
+	if(next!=24)//œ¬“ª∏ˆ≤ª «”“–°¿®∫≈£¨ Ù”⁄function_param°£“™ªÿÕÀ 
+	{
+		unreadToken();
+		while(next!=24)
+		{
+			function_param();
+			next=nextToken();//”“–°¿®∫≈ªÚ∂∫∫≈
+			if(next!=24&&next!=27)
+			{
+				exit(-1);//…∂∂º≤ª « 
+			}
+		}//Ω· ¯µƒ ±∫Ú”“–°¿®∫≈“—æ≠∂¡π˝¡À 
+	}
+	next=nextToken();
+	if(next!=36)
+	{
+		exit(-1);
+	}
+	int tyty=ty();
+	//¥À¥¶¥¶¿Ìty
+	block_stmt();
 }
 
 //program -> item*
 //item -> function | decl_stmt
 //decl_stmt -> let_decl_stmt | const_decl_stmt
-void program()//≥Ã–Ú£¨±ÿ»ª «≥£¡ø£®3£©°¢±‰¡ø£®8£©ªÚ∫Ø ˝£®6£©
+void program()//≥Ã–Ú£¨±ÿ»ª «≥£¡ø”Ôæ‰£®3£©°¢±‰¡ø”Ôæ‰£®8£©ªÚ∫Ø ˝£®6£©
 {
 	int tok=nextToken();
 	if(tok==-1)
