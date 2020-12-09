@@ -566,26 +566,34 @@ int ty()//类型：仍旧为标识符（51）。不做开头，不得预读
 	}
 }
 
-struct symboltable//符号表结构体 
+struct symbolstack//栈式符号表结构体 
 {
-	char name[128];//名字 
-	int isconst;//是常数为1，否则为0
-	int valid;//是否初始化。1表示已初始化，值有效，否则无效。 
-	int type;//0为void，1为int，2为double
-	int value1;//type为1时有效 
-	double value2;//type为2时有效 
 	int istop;//1表示这一格是栈顶，新函数开始的前一格。默认为0 
+	int destination;//在全局表中的下标。为-1表示未初始化，为-2表示类型为void 
 };
 
-struct symboltable TABLE[128];//符号表 
-int TABLETOP;//栈顶下标
+struct symbolstack STACK[128];//符号表 
+int STACKTOP;//栈顶下标
 
-int find_all(char sss[])//根据变量名查全部符号表。查到返回下标，未查到返回-1。 
+struct symboltable//最终符号表结构体。所有的函数名字都要存进去。必须初始化才能放入本表。类型不能为void 
+{
+	char name[128];//名字，不可重复。
+	char isconst;//是常数为1，否则为0（输出长度为8） 
+	int type;//1为int，2为double，3为字符串（函数名或者字符串） 
+	int value1;//type为1时有效 
+	double value2;//type为2时有效 
+	char value3[128];//type为3时有效 
+}; 
+
+struct symboltable TABLE[128];//符号表 
+int TABLETOP;//表顶下表 
+
+int find_all(char sss[])//根据变量名查全部符号表栈。查到返回在栈中下标，未查到返回-1。 
 {
 	int i;
-	for(i=TABLETOP-1;i>=0;i--)//倒序查表 
+	for(i=STACKTOP-1;i>=0;i--)//倒序查表 
 	{
-		if(strcmp(TABLE[i],sss)==0)
+		if(strcmp(TABLE[STACK[i].destination].name,sss)==0)
 		{
 			return i;
 		}
@@ -593,12 +601,12 @@ int find_all(char sss[])//根据变量名查全部符号表。查到返回下标，未查到返回-1。
 	return -1;
 }
 
-int find_now(char sss[])//根据变量名查当前层符号表。查到返回下标，未查到返回-1。 
+int find_now(char sss[])//根据变量名查当前层符号表栈。查到返回在栈中下标，未查到返回-1。 
 {
 	int i;
-	for(i=TABLETOP-1;TABLE[i].istop!=1&&i>=0;i--)//倒序查表 
+	for(i=STACKTOP-1;STACK[i].istop!=1&&i>=0;i--)//倒序查表 
 	{
-		if(strcmp(TABLE[i],sss)==0)
+		if(strcmp(TABLE[STACK[i].destination].name,sss)==0)
 		{
 			return i;
 		}
@@ -886,7 +894,7 @@ void expr()
 					}
 					next=nextToken();//右括号被读了 
 				}
-				int rr=merging();
+				int rr=merging(expstack,expstacktop);
 				if(rr==-1)
 				{
 					exit(-1);//规约失败
@@ -898,7 +906,7 @@ void expr()
 			}
 			if(F[aaa]>G[bbb])//仅大于的时候才规约，其他时候读入。仅规约跳过最后读入部分 
 			{
-				int rr=merging();
+				int rr=merging(expstack,expstacktop);
 				if(rr==-1)
 				{
 					exit(-1);//规约失败
@@ -929,7 +937,7 @@ void expr()
 		{
 			if(expstack[expstacktop-1]==24||expstack[expstacktop-1]==41||expstack[expstacktop-1]==42||expstack[expstacktop-1]==51)//右括号，整型，浮点，标识符
 			{
-				int rr=merging();//先规约 
+				int rr=merging(expstack,expstacktop);//先规约 
 				if(rr==-1)
 				{
 					exit(-1);//规约失败
@@ -1020,24 +1028,28 @@ void const_decl_stmt()
 	{
 		exit(-1);
 	}
-	if(ty==1)//int时 
+	if(typpp==1)//int时 
 	{
-		memset(TABLE[TABLETOP],0,sizeof(struct symboltable));//填之前先清空这一格，以免出错 
+		memset(&STACK[STACKTOP],0,sizeof(struct symbolstack));//填之前先清空这一格，以免出错 
+		STACK[STACKTOP].destination=TABLETOP;
+		STACKTOP++;
+		memset(&TABLE[TABLETOP],0,sizeof(struct symboltable));//填之前先清空这一格，以免出错 
 		strcpy(TABLE[TABLETOP].name,iii);
-		TABLE[TABLETOP].valid=1;
 		TABLE[TABLETOP].isconst=1;
 		TABLE[TABLETOP].type=1;
 		TABLE[TABLETOP].value1=intint;
 		TABLETOP++;
 	}
-	else if(ty==2)//double时 
+	else if(typpp==2)//double时 
 	{
-		memset(TABLE[TABLETOP],0,sizeof(struct symboltable));//填之前先清空这一格，以免出错 
+		memset(&STACK[STACKTOP],0,sizeof(struct symbolstack));//填之前先清空这一格，以免出错 
+		STACK[STACKTOP].destination=TABLETOP;
+		STACKTOP++;
+		memset(&TABLE[TABLETOP],0,sizeof(struct symboltable));//填之前先清空这一格，以免出错 
 		strcpy(TABLE[TABLETOP].name,iii);
-		TABLE[TABLETOP].valid=1;
 		TABLE[TABLETOP].isconst=1;
 		TABLE[TABLETOP].type=2;
-		TABLE[TABLETOP].value2=doudou;
+		TABLE[TABLETOP].value1=doudou;
 		TABLETOP++;
 	}
 	else//其他不得声明 
@@ -1071,7 +1083,8 @@ void let_decl_stmt()
 	}
 	int typpp=ty();
 	tok=nextToken();
-	memset(TABLE[TABLETOP],0,sizeof(struct symboltable));//填之前先清空这一格，以免出错 
+	memset(&STACK[STACKTOP],0,sizeof(struct symbolstack));//填之前先清空这一格，以免出错 
+	memset(&TABLE[TABLETOP],0,sizeof(struct symboltable));//填之前先清空这一格，以免出错 
 	strcpy(TABLE[TABLETOP].name,iii);
 	if(tok==33)//等于部分可以选择省略
 	{
@@ -1079,18 +1092,20 @@ void let_decl_stmt()
 		//此处应处理表达式 
 		int intint;//假设int表达式的值存在这里 
 		double doudou;//假设double表达式的值存在这里 
-		if(ty==1)//int时 
+		if(typpp==1)//int时 
 		{
-			TABLE[TABLETOP].valid=1;
-			TABLE[TABLETOP].type=1;
-			TABLE[TABLETOP].value1=intint;
+			STACK[STACKTOP].destination=TABLETOP; 
+			STACKTOP++;
+			TABLE[TABLETOP].type=2;
+			TABLE[TABLETOP].value1=doudou;
 			TABLETOP++;
 		}
-		else if(ty==2)//double时 
+		else if(typpp==2)//double时 
 		{
-			TABLE[TABLETOP].valid=1;
+			STACK[STACKTOP].destination=TABLETOP;
+			STACKTOP++;
 			TABLE[TABLETOP].type=2;
-			TABLE[TABLETOP].value2=doudou;
+			TABLE[TABLETOP].value1=doudou;
 			TABLETOP++;
 		}
 		else//其他不得声明 
@@ -1107,9 +1122,10 @@ void let_decl_stmt()
 			exit(-1);
 		}
 	}
-	else if(tok==29)
+	else if(tok==29)//未初始化，不能放入全局表，只能在栈表占个位置 
 	{
-		TABLETOP++;
+		STACK[STACKTOP].destination=-1;//注明没初始化 
+		STACKTOP++;
 		return;
 	}
 	else
@@ -1372,123 +1388,58 @@ void program()//程序，必然是常量语句（3）、变量语句（8）或函数（6）
 void init()//全局变量初始化 
 {
 	PREVALID=0;//预读无效 
-	TABLETOP=0;//表清空
+	STACKTOP=0;//表清空
+	TABLETOP=0;//全体全局变量个数 
+}
+
+FILE *OUT; 
+
+char OUTINT[4];
+
+void outint(int temp)
+{
+	OUTINT[0]=(char)((temp>>24) & 0x000000ff);
+    OUTINT[1]=(char)((temp>>16) & 0x000000ff);
+    OUTINT[2]=(char)((temp>> 8) & 0x000000ff);
+    OUTINT[3]=(char)((temp>> 0) & 0x000000ff);
+    fwrite(OUTINT,sizeof(char),4,OUT);
 }
 
 int main(int argc,char *argv[])
 {
-	IN=fopen(argv[1],"r");
+//	IN=fopen(argv[1],"r");
+	IN=fopen("in.txt","r");
 	init(); 
-	
-//// start
-//72 30 3b 3e // magic
-//00 00 00 01 // version
-//
-//00 00 00 02 // globals.count
-//
-//// globals[0]
-//00 // globals[0].is_const
-//00 00 00 08 // globals[0].value.count
-//00 00 00 00 00 00 00 00 // globals[0].value.items
-//
-//// globals[1]
-//01 // globals[1].is_const
-//00 00 00 06 // globals[1].value.count
-//'_' 's' 't' 'a' 'r' 't' // globals[1].value.items
-//
-//00 00 00 01 // functions.count
-//
-//// functions[0]
-//00 00 00 01 // functions[0].name
-//00 00 00 00 // functions[0].ret_slots
-//00 00 00 00 // functions[0].param_slots
-//00 00 00 00 // functions[0].loc_slots
-//00 00 00 04 // functions[0].body.count
-//    // functions[0].body.items
-//    01 00 00 00 00 00 00 00 01 // Push(1)
-//    01 00 00 00 00 00 00 00 02 // Push(2)
-//    20 // AddI
-//    34 // NegI
-//// finish
-	
-///// 整个 o0 二进制文件
-//struct o0 {
-//    /// 魔数
-//    magic: u32 = 0x72303b3e,
-//    /// 版本号，定为 1
-//    version: u32 = 0x00000001,
-//    /// 全局变量表
-//    globals: Array<GlobalDef>,
-//    /// 函数列表
-//    functions: Array<FunctionDef>,
-//}
-//
-///// 类型为 T 的通用数组的定义
-//struct Array<T> {
-//    /// 数组的长度
-//    count: u32,
-//    /// 数组所有元素的无间隔排列
-//    items: T[],
-//}
-//
-///// 单个全局变量
-//struct GlobalDef {
-//    /// 是否为常量？非零值视为真
-//    is_const: u8,
-//    /// 按字节顺序排列的变量值
-//    value: Array<u8>,
-//}
-//
-///// 函数
-//struct FunctionDef {
-//    /// 函数名称在全局变量中的位置
-//    name: u32,
-//    /// 返回值占据的 slot 数
-//    return_slots: u32,
-//    /// 参数占据的 slot 数
-//    param_slots: u32,
-//    /// 局部变量占据的 slot 数
-//    loc_slots: u32,
-//    /// 函数体
-//    body: Array<Instruction>,
-//}
-//
-///// 指令，可以是以下三个选择之一
-//union Instruction {
-//    /// 无参数的指令，占 1 字节
-//    variant NoParam {
-//        opcode: u8
-//    },
-//    /// 有 4 字节参数的指令，占 5 字节
-//    variant u32Param {
-//        opcode: u8,
-//        param: u32,
-//    }
-//    /// 有 8 字节参数的指令，占 9 字节
-//    variant u64Param {
-//        opcode: u8,
-//        param: u64
-//    }
-//}
+	FILE *outfp;  
+	OUT=fopen("o0.bin","wb");
+	int temp=0x72303b3e;
+	outint(temp);//魔数
+	temp=0x00000001;
+	outint(temp);//版本号
+	outint(TABLETOP);//全局变量个数 
+	int i;
+	for(i=0;i<TABLETOP;i++)//输出全局变量表 
+	{
+		fwrite(TABLE[i].isconst,sizeof(char),1,OUT);//是否常量 
+		if(TABLE[i].type==1)//是整数 
+		{
+			
+		}
+		else if(TABLE[i].type==2)//是浮点数 
+		{
+			
+		}
+		else if(TABLE[i].type==3)//是函数名或者字符串 
+		{
+			
+		}
+		else
+		{
+			exit(-1);
+		}
+	}
 
-//关于全局变量
-//在 navm 中，每个全局变量都是多个字节组成的数组。全局变量的编号是它在全局变量表中的序号（0 开始）。
-//
-//用来存储数字
-//使用全局变量存储数字的初始化操作建议在 _start 函数中进行，这样不用考虑字节顺序问题。如果你直接给全局变量赋初始值的话，请使用小端序存储（低位字节在前，高位字节在后）。
-//
-//用来存储字符串
-//使用全局变量存储字符串时，直接将初始值设置为以 ASCII 存储的字符串内容（类似于 memcpy）即可。存储的字符串不需要以 \0 结尾。
-
-//程序入口
-//navm 总是会最先运行函数列表里编号为 0 的（也就是整个列表中第一个）函数，按照惯例这个函数的名称为 _start。_start 函数没有任何参数，也不返回任何值，这两项的参数会被忽略。_start 函数不能有返回指令。
-//
-//一般来说，程序会在 _start 中设置全局变量的值，以及进行其他的准备工作。在准备工作完成之后，_start 函数应当调用 main 函数开始正式的程序运行。如果需要，_start 函数也可以在 main 函数返回之后进行清理工作。_start 函数不需要返回。
-//
-//一个示例的 _start 函数如下：
-
-
-
+	fclose(OUT);
 	fclose(IN);
 	return 0;
 }
