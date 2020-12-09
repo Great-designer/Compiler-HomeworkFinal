@@ -569,7 +569,8 @@ int ty()//类型：仍旧为标识符（51）。不做开头，不得预读
 struct symbolstack//栈式符号表结构体 
 {
 	int istop;//1表示这一格是栈顶，新函数开始的前一格。默认为0 
-	int destination;//在全局表中的下标。为-1表示未初始化，为-2表示类型为void 
+	int destination;//在全局表中的下标。为-1表示未初始化，为-2表示类型为void（或纯字符串）。不给纯字符串变量入口 
+	int isfunction;//是函数名的时候设成1。函数名作为全局变量永远不弹出栈 
 };
 
 struct symbolstack STACK[128];//符号表 
@@ -577,25 +578,24 @@ int STACKTOP;//栈顶下标
 
 struct symboltable//最终符号表结构体。所有的函数名字都要存进去。必须初始化才能放入本表。类型不能为void 
 {
-	char name[128];//名字，不可重复。
+	char name[128];//名字，除了纯字符串外不可重复。type为3时有效 
 	char isconst;//是常数为1，否则为0（输出长度为8） 
 	int type;//1为int，2为double，3为字符串（函数名或者字符串） 
 	int value1;//type为1时有效 
 	double value2;//type为2时有效 
-	char value3[128];//type为3时有效 
 }; 
 
 struct symboltable TABLE[128];//符号表 
-int TABLETOP;//表顶下表 
+int TABLETOP;//表顶下标 
 
-int find_all(char sss[])//根据变量名查全部符号表栈。查到返回在栈中下标，未查到返回-1。 
+int find_all(char sss[])//根据变量名查全部符号表栈。查到返回在全局的下标，未查到返回-1。 
 {
 	int i;
 	for(i=STACKTOP-1;i>=0;i--)//倒序查表 
 	{
 		if(strcmp(TABLE[STACK[i].destination].name,sss)==0)
 		{
-			return i;
+			return STACK[i].destination;
 		}
 	}
 	return -1;
@@ -608,11 +608,24 @@ int find_now(char sss[])//根据变量名查当前层符号表栈。查到返回在栈中下标，未查到
 	{
 		if(strcmp(TABLE[STACK[i].destination].name,sss)==0)
 		{
-			return i;
+			return STACK[i].destination;
 		}
 	}
 	return -1;
 }
+
+struct functionlist//全局函数表 
+{
+	int name;//在全局符号表的位置
+	int type;//类型决定返回值有多少个8字节。void为0，int为4，double为8 
+	int param;//参数列表决定多少个8字节。int为4，double为8，求和。
+	int local;//局部变量有多少个8字节
+	int count;//指令数 
+	char instr[128];//指令集 
+};
+
+struct functionlist FUNCTIONLIST[128];
+int FUNCTIONLISTTOP;
 
 // 运算符表达式 operator_expr、取反表达式 negate_expr 和类型转换表达式 as_expr 可以使用局部的算符优先文法
 
@@ -1390,6 +1403,30 @@ void init()//全局变量初始化
 	PREVALID=0;//预读无效 
 	STACKTOP=0;//表清空
 	TABLETOP=0;//全体全局变量个数 
+	FUNCTIONLISTTOP=0;//函数表个数
+}
+
+void lastcheck()//设置入口点。假设之前编译部分全做完了 
+{
+	memset(&TABLE[TABLETOP],0,sizeof(struct symboltable));//填之前先清空这一格，以免出错 
+	strcpy(TABLE[TABLETOP].name,"_start");
+	TABLE[TABLETOP].isconst=1;
+	TABLE[TABLETOP].type=3;
+	memset(&FUNCTIONLIST[FUNCTIONLISTTOP],0,sizeof(struct functionlist));//填之前先清空这一格，以免出错 
+	FUNCTIONLIST[FUNCTIONLISTTOP].name=TABLETOP;
+	TABLETOP++;
+	FUNCTIONLIST[FUNCTIONLISTTOP].type=0;//无返回值
+	FUNCTIONLIST[FUNCTIONLISTTOP].param=0;//无参数 
+	FUNCTIONLIST[FUNCTIONLISTTOP].local=0;//无局部变量
+	FUNCTIONLIST[FUNCTIONLISTTOP].count=1;//只有一个指令 
+	char chte[10];
+	strcpy(chte,"main");
+	int temp=find_all(chte);//返回函数名称main在全局变量中的位置
+	FUNCTIONLIST[FUNCTIONLISTTOP].instr[0]=(char)0x4a;//callname 
+	FUNCTIONLIST[FUNCTIONLISTTOP].instr[1]=(char)((temp>>24) & 0x000000ff);//大端 
+	FUNCTIONLIST[FUNCTIONLISTTOP].instr[2]=(char)((temp>>16) & 0x000000ff);
+	FUNCTIONLIST[FUNCTIONLISTTOP].instr[3]=(char)((temp>> 8) & 0x000000ff);
+	FUNCTIONLIST[FUNCTIONLISTTOP].instr[4]=(char)((temp>> 0) & 0x000000ff);
 }
 
 FILE *OUT; 
@@ -1405,11 +1442,29 @@ void outint(int temp)
     fwrite(OUTINT,sizeof(char),4,OUT);
 }
 
+char OUTDOUBLE[8];
+
+void outdouble(double *temp)
+{
+	long long* pr=(long long*)temp;
+	OUTDOUBLE[0]=(char)((*pr>>56) & 0x00000000000000ffLL);
+    OUTDOUBLE[1]=(char)((*pr>>48) & 0x00000000000000ffLL);
+    OUTDOUBLE[2]=(char)((*pr>>40) & 0x00000000000000ffLL);
+    OUTDOUBLE[3]=(char)((*pr>>32) & 0x00000000000000ffLL);
+	OUTDOUBLE[4]=(char)((*pr>>24) & 0x00000000000000ffLL);
+    OUTDOUBLE[5]=(char)((*pr>>16) & 0x00000000000000ffLL);
+    OUTDOUBLE[6]=(char)((*pr>> 8) & 0x00000000000000ffLL);
+    OUTDOUBLE[7]=(char)((*pr>> 0) & 0x00000000000000ffLL);
+    fwrite(OUTDOUBLE,sizeof(char),8,OUT);
+}
+
 int main(int argc,char *argv[])
 {
 //	IN=fopen(argv[1],"r");
 	IN=fopen("in.txt","r");
 	init(); 
+	//这里是编译主体 
+	lastcheck(); 
 	FILE *outfp;  
 	OUT=fopen("o0.bin","wb");
 	int temp=0x72303b3e;
@@ -1418,27 +1473,43 @@ int main(int argc,char *argv[])
 	outint(temp);//版本号
 	outint(TABLETOP);//全局变量个数 
 	int i;
-	for(i=0;i<TABLETOP;i++)//输出全局变量表 
+	for(i=0;i<TABLETOP;i++)//正序输出全局变量表 
 	{
-		fwrite(TABLE[i].isconst,sizeof(char),1,OUT);//是否常量 
+		fwrite(&TABLE[i].isconst,sizeof(char),1,OUT);//是否常量 
 		if(TABLE[i].type==1)//是整数 
 		{
-			
+			int len=4;
+			outint(len);
+			outint(TABLE[i].value1);
 		}
 		else if(TABLE[i].type==2)//是浮点数 
 		{
-			
+			int len=8;
+			outint(len);
+			outdouble(&TABLE[i].value2);
 		}
 		else if(TABLE[i].type==3)//是函数名或者字符串 
 		{
-			
+			int len=strlen(&TABLE[i].value3);
+			outint(len);
+			fwrite(&TABLE[i].name,sizeof(char),len,OUT);
 		}
 		else
 		{
 			exit(-1);
 		}
 	}
-
+	outint(FUNCTIONLISTTOP);//函数个数 
+	for(i=FUNCTIONLISTTOP-1;i>=0;i--)//倒序输出函数表
+	{
+		outint(FUNCTIONLIST[i].name);//名 
+		outint(FUNCTIONLIST[i].type);//型
+		outint(FUNCTIONLIST[i].param);//参
+		outint(FUNCTIONLIST[i].local);//局
+		outint(FUNCTIONLIST[i].count);//数
+		int len=strlen(FUNCTIONLIST[i].instr);
+		fwrite(FUNCTIONLIST[i].instr,sizeof(char),len,OUT);
+	}
 	fclose(OUT);
 	fclose(IN);
 	return 0;
