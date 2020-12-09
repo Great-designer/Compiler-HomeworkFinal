@@ -4,7 +4,7 @@
 #include<stdlib.h>
 
 char TOKEN[128];//当前字符串常量（44），或者标识符（51）
-int NUM;//当前无符号整数（41，语法分析中允许取负） 
+long long NUM;//当前无符号整数（41，语法分析中允许取负） 
 double DOU;//当前无符号浮点数（42，语法分析中允许取负） 
 
 int reser()//关键字表，共10个 
@@ -98,7 +98,7 @@ int getToken()//返回下一个TOKEN的类别码，注释视为Token
 			{
 				ungetc(cc,IN);//退回非数字 
 				ungetc(cc,IN);//退回小数点
-				NUM=atoi(TOKEN);//将TOKEN中的字符串转换为整数 
+				NUM=atoll(TOKEN);//将TOKEN中的字符串转换为整数 
 				symbol=41;//此时识别的单词是整数 
 			}
 			else//有数字，那么至少这部分已经是一个浮点数 
@@ -198,7 +198,7 @@ int getToken()//返回下一个TOKEN的类别码，注释视为Token
 					ungetc(cc,IN);//退回非数字 
 					ungetc(cc,IN);//退回符号 
 					ungetc(cc,IN);//退回e
-					NUM=atoi(TOKEN);//将TOKEN中的字符串转换为整数 
+					NUM=atoll(TOKEN);//将TOKEN中的字符串转换为整数 
 					symbol=41;//此时识别的单词是整数 
 				}
 				else//是数字，这部分有效 
@@ -225,7 +225,7 @@ int getToken()//返回下一个TOKEN的类别码，注释视为Token
 					ungetc(cc,IN);//退回非数字 
 					ungetc(cc,IN);//退回符号 
 					ungetc(cc,IN);//退回e
-					NUM=atoi(TOKEN);//将TOKEN中的字符串转换为整数 
+					NUM=atoll(TOKEN);//将TOKEN中的字符串转换为整数 
 					symbol=41;//此时识别的单词是整数 
 				}
 				else//是数字，这部分有效 
@@ -248,7 +248,7 @@ int getToken()//返回下一个TOKEN的类别码，注释视为Token
 			{
 				ungetc(cc,IN);//退回非数字 
 				ungetc(cc,IN);//退回e
-				NUM=atoi(TOKEN);//将TOKEN中的字符串转换为整数 
+				NUM=atoll(TOKEN);//将TOKEN中的字符串转换为整数 
 				symbol=41;//此时识别的单词是整数 
 			}
 			else//是数字，这部分有效 
@@ -268,7 +268,7 @@ int getToken()//返回下一个TOKEN的类别码，注释视为Token
 		else//没有小数点，也没有E或e
 		{
 			ungetc(cc,IN);//退回字符 
-			NUM=atoi(TOKEN);//将TOKEN中的字符串转换为整数 
+			NUM=atoll(TOKEN);//将TOKEN中的字符串转换为整数 
 			symbol=41;//此时识别的单词是整数 
 		}
 	}
@@ -466,7 +466,7 @@ int getToken()//返回下一个TOKEN的类别码，注释视为Token
 char TOKENPRE[128];//预读的字符串常量（44），或者标识符（51）
 
 //TOKEN为整数（41）、浮点数（42）或，存储在NUM、DOU
-int NUMPRE;//无符号整数（41，语法分析中允许取负） 
+long long NUMPRE;//无符号整数（41，语法分析中允许取负） 
 double DOUPRE;//无符号浮点数（42，语法分析中允许取负） 
 
 //TOKEN为关键字、运算符和文档结尾（-1）的时候，直接看返回的编号即可
@@ -552,7 +552,7 @@ int ty()//类型：仍旧为标识符（51）。不做开头，不得预读
 	{
 		return 0;
 	}
-	else if(strcmp(TOKEN,"int")==0)
+	else if(strcmp(TOKEN,"int")==0)//64位。实际上是long long 
 	{
 		return 1;
 	}
@@ -573,19 +573,19 @@ struct symbolstack//栈式符号表结构体
 	int isfunction;//是函数名的时候设成1。函数名作为全局变量永远不弹出栈 
 };
 
-struct symbolstack STACK[128];//符号表 
+struct symbolstack STACK[256];//符号表，长一点 
 int STACKTOP;//栈顶下标
 
 struct symboltable//最终符号表结构体。所有的函数名字都要存进去。必须初始化才能放入本表。类型不能为void 
 {
-	char name[128];//名字，除了纯字符串外不可重复。type为3时有效 
+	char name[64];//名字，除了纯字符串外不可重复。type为3时有效 
 	char isconst;//是常数为1，否则为0（输出长度为8） 
-	int type;//1为int，2为double，3为字符串（函数名或者字符串） 
-	int value1;//type为1时有效 
+	int type;//1为int，2为double（都是64），3为字符串（函数名或者字符串） 
+	long long value1;//type为1时有效 
 	double value2;//type为2时有效 
 }; 
 
-struct symboltable TABLE[128];//符号表 
+struct symboltable TABLE[1024];//符号表，长一点 
 int TABLETOP;//表顶下标 
 
 int find_all(char sss[])//根据变量名查全部符号表栈。查到返回在全局的下标，未查到返回-1。 
@@ -617,14 +617,15 @@ int find_now(char sss[])//根据变量名查当前层符号表栈。查到返回在栈中下标，未查到
 struct functionlist//全局函数表 
 {
 	int name;//在全局符号表的位置
-	int type;//类型决定返回值有多少个8字节。void为0，int为4，double为8 
-	int param;//参数列表决定多少个8字节。int为4，double为8，求和。
+	int type;//类型决定返回值有多少个8字节。void为0，int和double都为8。此处记录0，1和2 
+	int param[16];//最多16个参数。参数为1表示int，2表示double 
+	int paramtop;//参数列表决定多少个8字节。int和double都为8，故乘8即可。
 	int local;//局部变量有多少个8字节
 	int count;//指令数 
-	char instr[128];//指令集 
+	char instr[1024];//指令集 
 };
 
-struct functionlist FUNCTIONLIST[128];
+struct functionlist FUNCTIONLIST[64];//最多64个函数吧，让指令集长一点 
 int FUNCTIONLISTTOP;
 
 // 运算符表达式 operator_expr、取反表达式 negate_expr 和类型转换表达式 as_expr 可以使用局部的算符优先文法
@@ -662,75 +663,75 @@ int translate(int t)//TOKEN翻译器，必须是上述7种符号才能进入翻译器，仅查表时用到
 {
 	switch(t)
 	{
-		case '25'://左大括号 
+		case 25://左大括号 
 		{
 			return 0;
 		}
-		case '27'://逗号
+		case 27://逗号
 		{
 			return 0;
 		}
-		case '29'://分号
+		case 29://分号
 		{
 			return 0;
 		}
-		case '30'://不等于号
+		case 30://不等于号
 		{
 			return 0;
 		}
-		case '34'://小于号
+		case 34://小于号
 		{
 			return 0;
 		}
-		case '35'://大于号
+		case 35://大于号
 		{
 			return 0;
 		}
-		case '37'://等于等于号
+		case 37://等于等于号
 		{
 			return 0;
 		}
-		case '38'://小于等于号
+		case 38://小于等于号
 		{
 			return 0;
 		}
-		case '39'://大于等于号
+		case 39://大于等于号
 		{
 			return 0;
 		}
-		case '23'://左括号 
+		case 23://左括号 
 		{
 			return 1;
 		}
-		case '21'://加号 
+		case 21://加号 
 		{
 			return 2;
 		}
-		case '31'://减号 
+		case 31://减号 
 		{
 			return 3;
 		}
-		case '22'://乘号 
+		case 22://乘号 
 		{
 			return 4;
 		}
-		case '32'://除号 
+		case 32://除号 
 		{
 			return 5;
 		}
-		case '24'://右括号 
+		case 24://右括号 
 		{
 			return 6;
 		}
-		case '41'://整数 
+		case 41://整数 
 		{
 			return 7;
 		}
-		case '42'://浮点数 
+		case 42://浮点数 
 		{
 			return 7;
 		}
-		case '51'://标识符 
+		case 51://标识符 
 		{
 			return 7;
 		}
@@ -742,42 +743,6 @@ int translate(int t)//TOKEN翻译器，必须是上述7种符号才能进入翻译器，仅查表时用到
 }
 
 //读进来的非终结符记作-2。总共只有e+e、e-e、e*e、e/e、(e)、整数（41）、浮点数（42）和标识符（51）五种可能 
-int merging(int expstack[],int expstacktop)//返回expstacktop应该减去的值 
-{
-	if(expstacktop==0)//栈为空 
-	{
-		return -1;
-	}
-	if(expstack[expstacktop-1]==41||expstack[expstacktop-1]==42||expstack[expstacktop-1]==51)//整数（41）、浮点数（42）和标识符（51）
-	{
-		return 1;
-	}
-	if(expstacktop<3)//后面的规则要求栈里至少有3个字符，即012的位置必须有字符，expstacktop至少是3，避免下溢出错误 
-	{
-		return -1;
-	}
-	if(expstack[expstacktop-1]==-2&&expstack[expstacktop-2]==21&&expstack[expstacktop-3]==-2)//e+e
-	{
-		return 3;
-	}
-	if(expstack[expstacktop-1]==-2&&expstack[expstacktop-2]==31&&expstack[expstacktop-3]==-2)//e-e
-	{
-		return 3;
-	}
-	if(expstack[expstacktop-1]==-2&&expstack[expstacktop-2]==22&&expstack[expstacktop-3]==-2)//e*e
-	{
-		return 3;
-	}
-	if(expstack[expstacktop-1]==-2&&expstack[expstacktop-2]==32&&expstack[expstacktop-3]==-2)//e/e
-	{
-		return 3;
-	}
-	if(expstack[expstacktop-1]==24&&expstack[expstacktop-2]==-2&&expstack[expstacktop-3]==23)//(e)
-	{
-		return 3;
-	}
-	return -1;
-}
 
 //四个特判 
 
@@ -808,6 +773,7 @@ void expr()
 	int aaa,bbb;//自变量。n代表不区分的非终结符，为-2 
 	int *expstack=(int *)malloc(sizeof(int)*128);//栈里面永远是标准编号 
 	int expstacktop=0;//expstacktop总指向栈顶元素的下一个位置，即expstacktop-1才是栈顶元素 
+	char *namestack=(char *)malloc(sizeof(char)*128);//只暂存上一次标识符 
 	int next=nextToken();//读入
 	while(1)//减少用else，每个分支末尾尽可能continue或者break
 	{
@@ -893,6 +859,8 @@ void expr()
 			}
 			if(count==57)//标识符加左括号。这时候应当触发函数调用
 			{
+				//先查函数表，记下来函数，然后计算各个表达式，然后传值，最后调用，把这一整串内容作为整体记录在非终结符号这里 
+				//这里有误。第一个参量可有可无 
 				expr();//已经读过了ident和左括号 
 				int next=nextToken();//触发函数调用。结束后右括号已经被读了
 				while(next!=24)//右括号结束，逗号表示没结束
@@ -907,20 +875,47 @@ void expr()
 					}
 					next=nextToken();//右括号被读了 
 				}
-				int rr=merging(expstack,expstacktop);
-				if(rr==-1)
-				{
-					exit(-1);//规约失败
-				}
-				expstacktop-=rr;//规约成功弹栈 
+				//这里处理函数调用，并将返回内容作为指令序列粘进来 
 				expstack[expstacktop]=-2;//压入非终结符号 
 				expstacktop++;//压入非终结符号 
 				continue;//仅规约跳过最后读入部分 
 			}
 			if(F[aaa]>G[bbb])//仅大于的时候才规约，其他时候读入。仅规约跳过最后读入部分 
 			{
-				int rr=merging(expstack,expstacktop);
-				if(rr==-1)
+				int rr;//第二次规约 
+				if(expstacktop==0)//栈为空 
+				{
+					exit(-1);//规约失败
+				}
+				else if(expstack[expstacktop-1]==41||expstack[expstacktop-1]==42||expstack[expstacktop-1]==51)//整数（41）、浮点数（42）和标识符（51）
+				{
+					rr=1;
+				}
+				else if(expstacktop<3)//后面的规则要求栈里至少有3个字符，即012的位置必须有字符，expstacktop至少是3，避免下溢出错误 
+				{
+					exit(-1);//规约失败
+				}
+				else if(expstack[expstacktop-1]==-2&&expstack[expstacktop-2]==21&&expstack[expstacktop-3]==-2)//e+e
+				{
+					rr=3;
+				}
+				else if(expstack[expstacktop-1]==-2&&expstack[expstacktop-2]==31&&expstack[expstacktop-3]==-2)//e-e
+				{
+					rr=3;
+				}
+				else if(expstack[expstacktop-1]==-2&&expstack[expstacktop-2]==22&&expstack[expstacktop-3]==-2)//e*e
+				{
+					rr=3;
+				}
+				else if(expstack[expstacktop-1]==-2&&expstack[expstacktop-2]==32&&expstack[expstacktop-3]==-2)//e/e
+				{
+					rr=3;
+				}
+				else if(expstack[expstacktop-1]==24&&expstack[expstacktop-2]==-2&&expstack[expstacktop-3]==23)//(e)
+				{
+					rr=3;
+				}
+				else
 				{
 					exit(-1);//规约失败
 				}
@@ -929,6 +924,10 @@ void expr()
 				expstacktop++;//压入非终结符号 
 				continue;//仅规约跳过最后读入部分 
 			}
+		}
+		if(next==51)//读入前暂存标识符
+		{
+			strcpy(namestack,TOKEN); 
 		}
 		expstack[expstacktop]=next;//压入标准序号，应为next 
 		expstacktop++;//压入标准序号
@@ -950,8 +949,40 @@ void expr()
 		{
 			if(expstack[expstacktop-1]==24||expstack[expstacktop-1]==41||expstack[expstacktop-1]==42||expstack[expstacktop-1]==51)//右括号，整型，浮点，标识符
 			{
-				int rr=merging(expstack,expstacktop);//先规约 
-				if(rr==-1)
+				int rr;//最后一次规约 
+				if(expstacktop==0)//栈为空 
+				{
+					exit(-1);//规约失败
+				}
+				else if(expstack[expstacktop-1]==41||expstack[expstacktop-1]==42||expstack[expstacktop-1]==51)//整数（41）、浮点数（42）和标识符（51）
+				{
+					rr=1;
+				}
+				else if(expstacktop<3)//后面的规则要求栈里至少有3个字符，即012的位置必须有字符，expstacktop至少是3，避免下溢出错误 
+				{
+					exit(-1);//规约失败
+				}
+				else if(expstack[expstacktop-1]==-2&&expstack[expstacktop-2]==21&&expstack[expstacktop-3]==-2)//e+e
+				{
+					rr=3;
+				}
+				else if(expstack[expstacktop-1]==-2&&expstack[expstacktop-2]==31&&expstack[expstacktop-3]==-2)//e-e
+				{
+					rr=3;
+				}
+				else if(expstack[expstacktop-1]==-2&&expstack[expstacktop-2]==22&&expstack[expstacktop-3]==-2)//e*e
+				{
+					rr=3;
+				}
+				else if(expstack[expstacktop-1]==-2&&expstack[expstacktop-2]==32&&expstack[expstacktop-3]==-2)//e/e
+				{
+					rr=3;
+				}
+				else if(expstack[expstacktop-1]==24&&expstack[expstacktop-2]==-2&&expstack[expstacktop-3]==23)//(e)
+				{
+					rr=3;
+				}
+				else
 				{
 					exit(-1);//规约失败
 				}
@@ -973,6 +1004,7 @@ void expr()
 		}
 	}
 	free(expstack);
+	free(namestack); 
 }
 
 // 造一条：比较运算符的运行结果是布尔类型，只能出现在 if 和 while 语句的条件表达式中。运算符的两侧必须是相同类型的数据 
@@ -1004,6 +1036,7 @@ void expr_stmt()
 	}
 }
 
+//声明语句不对。expr传过来的应当是一个语句序列，因此不应当初始化。 
 //未完成expr部分 
 //常量语句，以const（3）开头。规定开头调用前已经被读了，下一个默认是标识符（51）
 //const_decl_stmt -> 'const' IDENT ':' ty '=' expr ';'
@@ -1034,7 +1067,7 @@ void const_decl_stmt()
 	}
 	expr();//表达式
 	//此处应处理表达式 
-	int intint;//假设int表达式的值存在这里 
+	long long intint;//假设int表达式的值存在这里 
 	double doudou;//假设double表达式的值存在这里 
 	tok=nextToken();
 	if(tok!=29)//分号 
@@ -1103,7 +1136,7 @@ void let_decl_stmt()
 	{
 		expr();
 		//此处应处理表达式 
-		int intint;//假设int表达式的值存在这里 
+		long long intint;//假设int表达式的值存在这里 
 		double doudou;//假设double表达式的值存在这里 
 		if(typpp==1)//int时 
 		{
@@ -1427,6 +1460,7 @@ void lastcheck()//设置入口点。假设之前编译部分全做完了
 	FUNCTIONLIST[FUNCTIONLISTTOP].instr[2]=(char)((temp>>16) & 0x000000ff);
 	FUNCTIONLIST[FUNCTIONLISTTOP].instr[3]=(char)((temp>> 8) & 0x000000ff);
 	FUNCTIONLIST[FUNCTIONLISTTOP].instr[4]=(char)((temp>> 0) & 0x000000ff);
+	FUNCTIONLISTTOP++; 
 }
 
 FILE *OUT; 
@@ -1478,19 +1512,19 @@ int main(int argc,char *argv[])
 		fwrite(&TABLE[i].isconst,sizeof(char),1,OUT);//是否常量 
 		if(TABLE[i].type==1)//是整数 
 		{
-			int len=4;
+			int len=8;
 			outint(len);
-			outint(TABLE[i].value1);
+			fwrite(&TABLE[i].value1,sizeof(long long),1,OUT);
 		}
 		else if(TABLE[i].type==2)//是浮点数 
 		{
 			int len=8;
 			outint(len);
-			outdouble(&TABLE[i].value2);
+			fwrite(&TABLE[i].value2,sizeof(double),1,OUT);
 		}
 		else if(TABLE[i].type==3)//是函数名或者字符串 
 		{
-			int len=strlen(&TABLE[i].value3);
+			int len=strlen(TABLE[i].name);
 			outint(len);
 			fwrite(&TABLE[i].name,sizeof(char),len,OUT);
 		}
@@ -1503,8 +1537,22 @@ int main(int argc,char *argv[])
 	for(i=FUNCTIONLISTTOP-1;i>=0;i--)//倒序输出函数表
 	{
 		outint(FUNCTIONLIST[i].name);//名 
-		outint(FUNCTIONLIST[i].type);//型
-		outint(FUNCTIONLIST[i].param);//参
+		if(FUNCTIONLIST[i].type==0)//型
+		{
+			int ttt=0;
+			outint(ttt);
+		}
+		else if(FUNCTIONLIST[i].type==1)//型
+		{
+			int ttt=8;
+			outint(ttt);
+		}
+		else if(FUNCTIONLIST[i].type==2)//型
+		{
+			int ttt=8;
+			outint(ttt);
+		}
+		outint(8*FUNCTIONLIST[i].paramtop);//参
 		outint(FUNCTIONLIST[i].local);//局
 		outint(FUNCTIONLIST[i].count);//数
 		int len=strlen(FUNCTIONLIST[i].instr);
