@@ -680,59 +680,9 @@ int translate(int t)//TOKEN·­ÒëÆ÷£¬±ØĞëÊÇÉÏÊö7ÖÖ·ûºÅ²ÅÄÜ½øÈë·­ÒëÆ÷£¬½ö²é±íÊ±ÓÃµ½
 	}
 }
 
-//0x0a	loca	off:u32	-	1:addr	¼ÓÔØ off ¸ö slot ´¦¾Ö²¿±äÁ¿µÄµØÖ·
-//0x0b	arga	off:u32	-	1:addr	¼ÓÔØ off ¸ö slot ´¦²ÎÊı/·µ»ØÖµµÄµØÖ·
-//0x0c	globa	n:u32	-	1:addr	¼ÓÔØµÚ n ¸öÈ«¾Ö±äÁ¿/³£Á¿µÄµØÖ·
-
-//Ò»°ã±äÁ¿£¬ÓĞÈ«¾Ö±äÁ¿ 
-//¶ÔÓÚº¯Êı£¬ÓĞ²ÎÊıºÍ¾Ö²¿±äÁ¿¡£ÒªÉèÖÃº¯ÊıµÄ²ÎÊı±íºÍ¾Ö²¿±äÁ¿±í 
-
-struct symbolstack//Õ»Ê½·ûºÅ±í½á¹¹Ìå 
-{
-	int istop;//1±íÊ¾ÕâÒ»¸ñÊÇÕ»¶¥£¬ĞÂº¯Êı¿ªÊ¼µÄÇ°Ò»¸ñ¡£Ä¬ÈÏÎª0 
-	int invalid;//Ã»³õÊ¼»¯Éè³É1£¬³õÊ¼»¯ÁËÎª0¡£Ä¬ÈÏ³õÊ¼»¯ 
-	int kind;//±íÊ¾ÊÇ0È«¾Ö±äÁ¿¡¢1²ÎÊı¡¢2¾Ö²¿±äÁ¿
-	int func;//µ±Ç°´¦ÓÚÄÄ¸öº¯Êı 
-	int destination;//·Ç¸ºÊıÔÚÏàÓ¦±íÖĞµÄÏÂ±ê¡£
-	int isfunction;//ÊÇº¯ÊıÃûµÄÊ±ºòÉè³É1¡£º¯ÊıÃû×÷ÎªÈ«¾Ö±äÁ¿ÓÀÔ¶²»µ¯³öÕ» 
-};
-
-struct symbolstack STACK[256];//·ûºÅ±í£¬³¤Ò»µã 
-int STACKTOP;//Õ»¶¥ÏÂ±ê
-
-struct symboltable//×îÖÕÈ«¾Ö±äÁ¿·ûºÅ±í½á¹¹Ìå¡£ËùÓĞµÄº¯ÊıÃû×Ö¶¼Òª´æ½øÈ¥¡£±ØĞë³õÊ¼»¯²ÅÄÜ·ÅÈë±¾±í¡£ÀàĞÍ²»ÄÜÎªvoid 
-{
-	char name[64];//Ãû×Ö£¬³ıÁË´¿×Ö·û´®Íâ²»¿ÉÖØ¸´¡£typeÎª3Ê±ÓĞĞ§ 
-	char isconst;//ÊÇ³£ÊıÎª1£¬·ñÔòÎª0£¨Êä³ö³¤¶ÈÎª8£© 
-	int type;//1Îªint£¬2Îªdouble£¨¶¼ÊÇ64£©£¬3Îª×Ö·û´®£¨º¯ÊıÃû»òÕß×Ö·û´®£© 
-	long long value1;//typeÎª1Ê±ÓĞĞ§ 
-	double value2;//typeÎª2Ê±ÓĞĞ§ 
-}; 
-
-struct symboltable TABLE[1024];//·ûºÅ±í£¬³¤Ò»µã 
-int TABLETOP;//±í¶¥ÏÂ±ê 
-
-//Î´Íê³É 
-int find_now(char sss[])//¸ù¾İ±äÁ¿Ãû²éÏàÓ¦·ûºÅ±íÕ»¡£²éµ½·µ»ØÔÚÕ»ÖĞÏÂ±ê£¬Î´²éµ½·µ»Ø-1¡£ 
-{
-	int i;
-	for(i=STACKTOP-1;STACK[i].istop!=1&&i>=0;i--)//µ¹Ğò²é±í 
-	{
-		if(STACK[i].invalid==1||STACK[i].destination<0)//ÔÚÕ»ÖĞÎ´³õÊ¼»¯£¬»òÕß¸É´à¾ÍÃ»·Åµ½±í 
-		{
-			continue;
-		} 
-		if(strcmp(TABLE[STACK[i].destination].name,sss)==0)
-		{
-			return STACK[i].destination;
-		}
-	}
-	return -1;
-}
-
 struct instruction//Ö¸Áî½á¹¹Ìå 
 {
-	char list[512];//Ö¸ÁîĞòÁĞ
+	char list[1024];//Ö¸ÁîĞòÁĞ
 	char count;//Ö¸Áî¸öÊı 
 	int length;//Ö¸Áî³¤¶È 
 }; 
@@ -755,7 +705,6 @@ struct instruction instrcat(struct instruction A,struct instruction B)//Ö¸ÁîÆ´½Ó
 }
 
 //navm µÄÖ¸ÁîÊ¹ÓÃ 8 Î»£¨1 ×Ö½Ú£©ÎŞ·ûºÅÕûÊı±êÊ¶ 
-
 void storeint(int temp,char chttt[],int i)//´ó¶Ë·¨½«32Î»£¨4×Ö½Ú£©Ö¸Áî´æÈëÖ¸¶¨Î»ÖÃ 
 {
 	chttt[i]=(char)((temp>>24) & 0x000000ff);
@@ -795,18 +744,137 @@ struct expression//±í´ïÊ½½á¹¹Ìå
 	struct instruction instr;//±í´ïÊ½µÄÖ¸ÁîÁĞ 
 };
 
-struct functionlist//È«¾Öº¯Êı±í 
+//0x0a	loca	off:u32	-	1:addr	¼ÓÔØ off ¸ö slot ´¦¾Ö²¿±äÁ¿µÄµØÖ·£¬´Óloc0¿ªÊ¼ 
+//0x0b	arga	off:u32	-	1:addr	¼ÓÔØ off ¸ö slot ´¦²ÎÊı/·µ»ØÖµµÄµØÖ·¡£·µ»ØÖµÊÇarg0£¨voidÃ»ÓĞ£©£¬²ÎÊı´Óarg1£¨arg0£¬void´Óarg1£©¿ªÊ¼¡£
+//²ÎÊı¾ùÒª³õÊ¼»¯¡£·µ»ØÖµÃ»ÓĞÃû×Ö£¬²»¿ÉÊ¹ÓÃ£¬ÈÏÎªÎ´³õÊ¼»¯ 
+//0x0c	globa	n:u32	-	1:addr	¼ÓÔØµÚ n ¸öÈ«¾Ö±äÁ¿/³£Á¿µÄµØÖ·¡£³£Á¿ÔÚÈ«¾Ö¡¢²ÎÊıºÍ¶¼¿ÉÒÔ¶¨Òå 
+//ĞèÒªÒ»¸öÈ«¾Ö±í£¬·ÅÈ«¾Ö±äÁ¿¡¢º¯ÊıÃûºÍ×Ö·û´®¡£²éÕÒÊ±±éÀú£¬²»ÔÚÕ»ÀïÃæ£¬²»ĞèÒªÕ» 
+
+struct symboltable//Á¿½á¹¹Ìå¡£
 {
-	int name;//ÔÚÈ«¾Ö·ûºÅ±íµÄÎ»ÖÃ
-	int type;//ÀàĞÍ¾ö¶¨·µ»ØÖµÓĞ¶àÉÙ¸ö8×Ö½Ú¡£voidÎª0£¬intºÍdouble¶¼Îª8¡£´Ë´¦¼ÇÂ¼0£¬1ºÍ2 
-	int param[16];//×î¶à16¸ö²ÎÊı¡£²ÎÊıÎª1±íÊ¾int£¬2±íÊ¾double 
-	int paramtop;//²ÎÊıÁĞ±í¾ö¶¨¶àÉÙ¸ö8×Ö½Ú¡£intºÍdouble¶¼Îª8£¬¹Ê³Ë8¼´¿É¡£
-	int local;//¾Ö²¿±äÁ¿ÓĞ¶àÉÙ¸ö8×Ö½Ú
-	struct instruction instr[1024];//º¯ÊıµÄÖ¸ÁîÁĞ 
+	char name[64];//Ãû×Ö£¬³ıÁË´¿×Ö·û´®Íâ²»¿ÉÖØ¸´¡£typeÎª0Ê±ÓĞĞ§£¬ĞèÒªĞ´½øÈ«¾Ö³õÊ¼»¯²¿·Ö¡£¿ÉÒÔstrlen 
+	char isconst;//ÊÇ³£ÊıÎª1£¬²»ÊÇ³£ÊıÎª0£¨Êä³ö³¤¶ÈÎª8£© 
+	int valid;//Î´³õÊ¼»¯Îª0£¬³õÊ¼»¯Îª1 
+	int type;//1Îªint£¬2Îªdouble£¨¶¼ÊÇ64£©£¬0Îªvoid×Ö·û´®£¨º¯ÊıÃû»òÕß×Ö·û´®£©¡£intºÍdoubleµÄ³õÊ¼»¯¶¼ÔÚ_startÖĞ 
+}; 
+
+struct symboltable TABLE[128];//È«¾Ö±í¡£ËùÓĞµÄº¯ÊıÃû×Ö¶¼Òª´æ½øÈ¥¡£¾ù²»ÓÃ³õÊ¼»¯£¬¾Í²»ÓÃ´æÖµ  
+int TABLETOP;//±í¶¥ÏÂ±ê 
+
+int find_table(char sss[])//¸ù¾İ±äÁ¿Ãû£¬Ë³Ğò²éÈ«¾Ö·ûºÅ±í¡£²éµ½·µ»ØÔÚ±íÖĞÏÂ±ê£¬Î´²éµ½·µ»Ø-1¡£
+{
+	int i;
+	for(i=0;i<TABLETOP;i++)//ÎŞĞèµ¹Ğò
+	{
+		if(strcmp(TABLE[i].name,sss)==0)
+		{
+			return i;
+		}
+	}
+	return -1;
+}
+
+//ĞèÒªÒ»¸öº¯Êı±í¡£º¯ÊıµÄ½á¹¹
+//º¯ÊıÃûÔÚÈ«¾Ö±íÎ»ÖÃ 
+//·µ»ØÖµ£¨arg0£¬void¾ÍÃ»ÓĞ£©Õ¼¶àÉÙ¸ö8×Ö½Ú¡£Ö»ÄÜÎª0»ò1£¬¼ì²éarg0ÊÇ·ñ·µ»ØÖµ¼´¿É 
+//²ÎÊı£¨arg1¿ªÊ¼£¬void´Óarg0¿ªÊ¼£©Õ¼¶àÉÙ¸ö8×Ö½Ú¡£
+//Òò´ËĞèÒª·µ»ØÖµ/²ÎÊı±í£¬¼ÇÂ¼Ã¿¸ö·µ»ØÖµ/²ÎÊı£ºÊÇ·ñ·µ»ØÖµ¡¢ÀàĞÍ¡¢ÊÇ·ñconst£¬Ãû×Ö¡£·µ»ØÖµÖ»ÓĞÀàĞÍ£¬Ã»ÓĞconstºÍÃû×Ö 
+//¾Ö²¿±äÁ¿±í£¨loc0¿ªÊ¼£©£¬²¢Õ¼¶àÉÙ¸ö8×Ö½Ú
+//¾Ö²¿±äÁ¿Õ»£¬¹ÜÀí¾Ö²¿±äÁ¿±í¡£Íê³É×÷ÓÃÓòÇ¶Ì×¡¢±äÁ¿ÉùÃ÷ÔöÇ¿¡¢breakºÍcontinue£¨Õë¶Ôwhile£©¡¢º¯Êı·µ»ØÂ·¾¶¼ì²é£¨Õë¶ÔifºÍelse£©
+//bodyÓĞ¶àÉÙÌõÖ¸ÁîºÍbodyÖ¸Áî±í¡£ÓÃinstruction½á¹¹Ìå 
+
+struct symbolstack//¾Ö²¿±äÁ¿Õ»½á¹¹Ìå 
+{
+	int istop;//1±íÊ¾ÕâÒ»¸ñÊÇÕ»¶¥£¬ĞÂº¯Êı¿ªÊ¼µÄÇ°Ò»¸ñ¡£Ä¬ÈÏÎª0 
+	int destination;//ÔÚ¾Ö²¿±äÁ¿±íÖĞµÄÏÂ±ê¡£
 };
 
-struct functionlist FUNCTIONLIST[64];//×î¶à64¸öº¯Êı°É£¬ÈÃÖ¸Áî¼¯³¤Ò»µã 
-int FUNCTIONLISTTOP;
+struct function//È«¾Öº¯Êı±í 
+{
+	int name;//ÔÚÈ«¾Ö·ûºÅ±íµÄÎ»ÖÃ
+	int type;//ÀàĞÍ¾ö¶¨·µ»ØÖµÓĞ¶àÉÙ¸ö8×Ö½Ú£¬ÒÔ¼°²ÎÊı±íÆğÊ¼Î»ÖÃ¡£voidÎª0£¬intºÍdouble¶¼Îª8¡£´Ë´¦¼ÇÂ¼0£¬1ºÍ2 
+	struct symboltable param[16];//×î¶à16¸ö²ÎÊıÓë·µ»ØÖµ¡£
+	int paramtop;//²ÎÊıÕ»¶¥¡£typeÎª1»òÕß2µÄÊ±ºò£¬Õ»¶¥ÏÈÔö¼ÓÒ»Î» 
+	int paramcount;//ÕæÕı²ÎÊı¸öÊı£¬¾ö¶¨¶àÉÙ¸ö8×Ö½Ú¡£intºÍdouble¶¼Îª8£¬¹Ê³Ë8¼´¿É¡£
+	struct symboltable localtable[32];//¾Ö²¿±äÁ¿±í
+	int localtabletop;//¾Ö²¿±äÁ¿±í¶¥£¬Ö¸Ê¾ÓĞ¶àÉÙ¸ö8×Ö½Ú
+	struct symbolstack localstack[32];//¾Ö²¿±äÁ¿Õ»£¬¹ÜÀí¾Ö²¿±äÁ¿±í
+	int localstacktop;//¾Ö²¿±äÁ¿Õ»¶¥
+	struct instruction instr;//º¯ÊıµÄÖ¸ÁîÁĞ 
+};
+
+struct function FUNCLIST[64];//×î¶à64¸öº¯Êı°É£¬ÈÃÖ¸Áî¼¯³¤Ò»µã 
+int FUNCLISTTOP;
+
+int find_func(char sss[])
+{
+	int i;
+	for(i=0;i<FUNCLISTTOP;i++)//ÎŞĞèµ¹Ğò
+	{
+		if(strcmp(TABLE[FUNCLIST[i].name].name,sss)==0)
+		{
+			return i;//Ö»¸ø±àÒëÆ÷ÓÃ
+		}
+	}
+	return -1;
+}
+
+int find_param(char sss[],int func)//²éÕÒ²ÎÊı±í£¬ĞèÒªÖªµÀÊÇÄÄ¸öº¯Êı£¬º¯ÊıĞòºÅÎª±àÒëÆ÷ĞòºÅ¡£Ë³Ğò²é±í£¬²éÈ«¾Ö±íÃû×Ö¡£Î´²éµ½·µ»Ø-1¡£
+{
+	int i;
+	for(i=0;i<FUNCLIST[func].paramtop;i++)//ÎŞĞèµ¹Ğò
+	{
+		if(type!=0&&i==0)//·µ»ØÖµÃ»ÓĞÃû×Ö£¬Ìø¹ı 
+		{
+			continue;
+		}
+		if(strcmp(FUNCLIST[func].param[i].name,sss)==0)
+		{
+			return i;//²éµ½·µ»ØÔÚ²ÎÊı±íÖĞÏÂ±ê
+		}
+	}
+	return -1;
+}
+
+int find_all(char sss[],int func)//¸ù¾İ±äÁ¿Ãû²éÈ«Ìå²ã·ûºÅ±íÕ»¡£²éµ½·µ»ØÔÚÕ»ÖĞÏÂ±ê£¬Î´²éµ½·µ»Ø-1¡£
+{
+	int i;
+	for(i=FUNCLIST[func].localstacktop-1;i>=0;i--)//µ¹Ğò²é±í 
+	{
+		if(strcmp(FUNCLIST[func].localtable[FUNCLIST[func].localstack[i].destination].name,sss)==0)
+		{
+			return FUNCLIST[func].localstack[i].destination;
+		}
+	}
+	return -1;
+}
+
+int find_now(char sss[],int func)//¸ù¾İ±äÁ¿Ãû²éµ±Ç°²ã·ûºÅ±íÕ»¡£²éµ½·µ»ØÔÚÕ»ÖĞÏÂ±ê£¬Î´²éµ½·µ»Ø-1¡£ 
+{
+	int i;
+	for(i=FUNCLIST[func].localstacktop-1;FUNCLIST[func].localstack[i].istop!=1&&i>=0;i--)//µ¹Ğò²é±í 
+	{
+		if(strcmp(FUNCLIST[func].localtable[FUNCLIST[func].localstack[i].destination].name,sss)==0)
+		{
+			return FUNCLIST[func].localstack[i].destination;
+		}
+	}
+	return -1;
+}
+
+//±äÁ¿²é±í£¬ĞèÒª²éÈ«¾Ö±äÁ¿±í¡£Èç¹ûÔÚº¯ÊıÖĞ£¬¾ÍÒª²éµ±Ç°º¯ÊıµÄ²ÎÊı±í£¨²»²é·µ»ØÖµ£©£¬ºÍÔÚ¾Ö²¿±äÁ¿Õ»ÖĞµÄ¾Ö²¿±äÁ¿±í 
+//¸ù¾İ×÷ÓÃÓòÇ¶Ì×Ô­Ôò£¬²éÕÒÊ±ÏÈ²éµ±Ç°²ãÔÙµ¹Ğò£¬¶¨Òå¿É¸²¸Ç¡£¾Ö²¿±äÁ¿±í¸²¸Ç²ÎÊı±í£¬²ÎÊı±í¸²¸ÇÈ«¾Ö±äÁ¿±í
+//¶¨Òå²é±í£¬Ö»²éµ±Ç°²ã¡£Òò´Ë¶¨ÒåÈ«¾Ö±äÁ¿Ö»²éÈ«¾Ö±äÁ¿±í£¬¶¨Òå²ÎÊıÖ»²é²ÎÊı±í£¬¶¨Òå¾Ö²¿±äÁ¿Ö»²éµ±Ç°block¡£Çø·ÖÈ«¾Ö±äÁ¿ºÍÄÄÒ»¸ö¾Ö²¿±äÁ¿blockÒªÒ»¸ö±àÒëÆ÷È«¾ÖÁ¿
+//º¯Êı±àºÅ´Ó0¿ªÊ¼£¬²¢ÇÒ0ºÅÊÇ_start¡£ÕâÒâÎ¶×Å¶¨ÒåÍêÁË×îºó¶¨Òå_start£¬È»ºóµ¹ĞòÊä³öº¯Êı±í¡£Òò´Ë±àÒëÆ÷µÄº¯Êı±àºÅ²»ÊÊÓÃÓÚĞéÄâ»úº¯Êı±àºÅ 
+//Ê¹ÓÃ²é±í£¬µ¹Ğò²éËùÓĞ²ã¡£ÏÈµ¹Ğò²éµ±Ç°º¯Êı¾Ö²¿±äÁ¿block£¬ÔÙ²éµ±Ç°º¯Êı²ÎÊı±í£¬ÔÙ²éÈ«ÌåÈ«¾Ö±äÁ¿
+
+//È«¾Ö±äÁ¿±àºÅ£¬±£³Ö±àÒëÆ÷ÓëĞéÄâ»úÒ»ÖÂ£¬Ë³ĞòÊä³ö 
+//µ÷ÓÃº¯Êı£¬Ö»Ê¹ÓÃcallnameÖ¸Áî 
+
+//ÔÚinitµÄÊ±ºò£¬ÏÈ°Ñ8¸ö±ê×¼¿âº¯ÊıÃûÈÓ½øÈ«¾Ö±äÁ¿±í£¬¼´0µ½7·Ö±ğÊÇ£º
+//getchar(0)getdouble(1)getint(2)putchar(4)putdouble(5)putint(6)putln(7)putstr(8)
+//º¯Êı¶¨Òå²é±í£¬Ö»²éÈ«¾Ö±äÁ¿±í 
+//º¯Êıµ÷ÓÃ²é±í£¬ÏÈÌØÅĞ±ê×¼¿âº¯Êı¡£¼´ÏÈÌØÅĞ±ê×¼¿â£¨Ö±½Ó¸ù¾İÇéĞÎ¼ÓÔØ²ÎÊı²¢callname¶ÔÓ¦ĞòºÅ£©£¬ÔÙ²éº¯Êı±íµÄº¯ÊıÃûµØÖ· 
 
 //¶Á½øÀ´µÄ·ÇÖÕ½á·û¼Ç×÷-2¡£×Ü¹²Ö»ÓĞe+e¡¢e-e¡¢e*e¡¢e/e¡¢(e)¡¢ÕûÊı£¨41£©¡¢¸¡µãÊı£¨42£©ºÍ±êÊ¶·û£¨51£©ÎåÖÖ¿ÉÄÜ 
 
@@ -834,6 +902,9 @@ int FUNCTIONLISTTOP;
 //±í´ïÊ½£¬7ÖÖ¿ÉÄÜ£¬º¬¸³Öµ±í´ïÊ½¼´8ÖÖ¿ÉÄÜ¡£exprÓĞ¿ÉÄÜµ÷ÓÃexpr£¬Òò´ËËüÉæ¼°µÄÈ«¾Ö±äÁ¿ĞèÒª¸ÄÎªÉêÇë¡£
 //¿ªÍ·Îª±êÊ¶·û£¨51£©¡¢¼õºÅ£¨31£©¡¢×óĞ¡À¨ºÅ£¨23£©¡¢ÕûÊı£¨41£©ºÍ¸¡µãÊı£¨42£©£¬²»µÃÔ¤¶Á¡£
 //expr -> operator_expr| negate_expr| as_expr| call_expr| literal_expr| ident_expr| group_expr
+
+int OVERALL;//±ê¼ÇÊÇ·ñÈ«¾ÖÉùÃ÷×´Ì¬¡£½øÈëº¯ÊıÊ±ÉèÖÃÎª1£¬ÍË³öÔòÎª0¡£Õâ½«¾ö¶¨²éÊ²Ã´±í 
+int FUNCNUM;//µ±Ç°±àÒëÆ÷´¦ÓÚ±àÒëÆ÷±àºÅÄÄ¸öº¯ÊıÖĞ¡£½øÈëº¯ÊıblockÊ±ÉèÖÃ 
 
 struct expression expr();//»áµ÷ÓÃÖ÷³ÌĞò 
 
@@ -896,7 +967,421 @@ struct expression parse_primary()//½âÎöÒ»Ôª±í´ïÊ½¡£ÕâÀï´¦Àí×óÀ¨ºÅ¡¢º¯Êıµ÷ÓÃ¡¢Ç°Ö
 	}
 	else if(op==51)//±êÊ¶·û¡£Õâ¾ÍÂé·³´óÁË£¬Òª²é±í¾ö¶¨ÊÇÊ²Ã´ÀàĞÍµÄ±äÁ¿£¬º¯Êıµ÷ÓÃÒ²ÔÚÕâ²¿·Ö£¬Ô¤¶Á¾ö¶¨¸³ÖµÒ²ÔÚÕâ²¿·Ö 
 	{
-		//ÏÈÁô°× 
+		char ebeb[2048];//ÏÈ°ÑTOKEN¸ã½øÀ´ 
+		strcpy(ebeb,TOKEN);
+		int veve=nextToken();//Ô¤¶ÁÒ»Î»
+		if(veve==33)//µÈºÅ¸³Öµ 
+		{
+			struct expression returning;//Ï£Íû·µ»ØµÄ±í´ïÊ½ 
+			memset(&returning,0,sizeof(struct expression));//Çå¿Õ 
+			struct expression vdvd=expr();//ºóÃæ²¿·ÖÊÇÒ»¸öÕı¾­µÄexpression 
+			if(OVERALL!=1)//²»¿ÉÄÜÔÚÈ«¾ÖÌ¬¡£È«¾ÖÖ»ÄÜÓĞ³£±äÁ¿¶¨ÒåºÍº¯Êı 
+			{
+				exit(-1);
+			}
+			else//º¯ÊıÌ¬ 
+			{
+				int finding=find_all(ebeb,FUNCNUM);//ÏÈ²é¾Ö²¿±í¡£Òª²éÈ«Ìå 
+				if(finding==-1)//Ã»²éµ½
+				{
+					finding=find_param(ebeb,FUNCNUM);//ÔÙ²é²ÎÁ¿±í
+					if(finding==-1)//Ã»²éµ½
+					{
+						finding=find_table(ebeb);//×îºó²éÈ«¾Ö±í
+						if(finding==-1)//¶¼Ã»²éµ½
+						{
+							exit(-1);//¸³Öµ¸ø²»´æÔÚµÄ±äÁ¿ÓïÒå´íÎó 
+						}
+						else//ÔÚÈ«¾Ö±í 
+						{
+							if(TABLE[finding].isconst==1)
+							{
+								exit(-1);//³£Á¿²»ÄÜ¸³Öµ 
+							}
+							if(TABLE[finding].type==0||vdvd.type==0||TABLE[finding].type!=vdvd.type)//ÏÈ¼ì²é±äÁ¿ÀàĞÍÊÇ·ñÒ»ÖÂ¡£Ö»¸³ÖµÒ»´Î£¬²»¹Ütype 
+							{
+								exit(-1);//¸³ÖµÀàĞÍÓïÒå´íÎó 
+							}
+							char intj=0x0c;//¼ÓÔØÈ«¾ÖÖ¸Áî 
+							returning.instr.list[returning.instr.length]=intj;
+							returning.instr.count++;
+							returning.instr.length++;//¹â±êÏÈÒÆ¶¯
+							storeint(finding,returning.instr.list,returning.instr.length);
+							returning.instr.length+=4;//Ò»¸ö32Î»Õ¼4¸öchar 
+							returning.instr=instrcat(returning.instr,vdvd.instr);//µØÖ·ÉÏÃæ·ÅÉÏexprÒ»¸ñ 
+							intj=0x17;//´¢´æÖ¸Áî 
+							returning.instr.list[returning.instr.length]=intj;
+							returning.instr.count++;
+							returning.instr.length++;
+							TABLE[finding].valid=1;//ÒÑ¸³Öµ£¬ÓĞĞ§ 
+							return returning;
+						}
+					}
+					else//ÔÚ²ÎÁ¿±í 
+					{
+						if(FUNCLIST[FUNCNUM].param[finding].isconst==1)
+						{
+							exit(-1);//³£Á¿²»ÄÜ¸³Öµ 
+						}
+						if(FUNCLIST[FUNCNUM].param[finding].type==0||vdvd.type==0||FUNCLIST[FUNCNUM].param[finding].type!=vdvd.type)//ÏÈ¼ì²é±äÁ¿ÀàĞÍÊÇ·ñÒ»ÖÂ¡£Ö»¸³ÖµÒ»´Î£¬²»¹Ütype 
+						{
+							exit(-1);//¸³ÖµÀàĞÍÓïÒå´íÎó 
+						}
+						char intj=0x0b;//¼ÓÔØ²ÎÁ¿Ö¸Áî 
+						returning.instr.list[returning.instr.length]=intj;
+						returning.instr.count++;
+						returning.instr.length++;//¹â±êÏÈÒÆ¶¯
+						storeint(finding,returning.instr.list,returning.instr.length);
+						returning.instr.length+=4;//Ò»¸ö32Î»Õ¼4¸öchar 
+						returning.instr=instrcat(returning.instr,vdvd.instr);//µØÖ·ÉÏÃæ·ÅÉÏexprÒ»¸ñ 
+						intj=0x17;//´¢´æÖ¸Áî 
+						returning.instr.list[returning.instr.length]=intj;
+						returning.instr.count++;
+						returning.instr.length++;
+						FUNCLIST[FUNCNUM].param[finding].valid=1;//ÒÑ¸³Öµ£¬ÓĞĞ§ 
+						return returning;
+					}
+				}
+				else//ÔÚ¾Ö²¿±í 
+				{
+					if(FUNCLIST[FUNCNUM].localtable[finding].isconst==1)
+					{
+						exit(-1);//³£Á¿²»ÄÜ¸³Öµ 
+					}
+					if(FUNCLIST[FUNCNUM].localtable[finding].type==0||vdvd.type==0||FUNCLIST[FUNCNUM].localtable[finding].type!=vdvd.type)//ÏÈ¼ì²é±äÁ¿ÀàĞÍÊÇ·ñÒ»ÖÂ¡£Ö»¸³ÖµÒ»´Î£¬²»¹Ütype 
+					{
+						exit(-1);//¸³ÖµÀàĞÍÓïÒå´íÎó 
+					}
+					char intj=0x0a;//¼ÓÔØ¾Ö²¿±äÁ¿Ö¸Áî 
+					returning.instr.list[returning.instr.length]=intj;
+					returning.instr.count++;
+					returning.instr.length++;//¹â±êÏÈÒÆ¶¯
+					storeint(finding,returning.instr.list,returning.instr.length);
+					returning.instr.length+=4;//Ò»¸ö32Î»Õ¼4¸öchar 
+					returning.instr=instrcat(returning.instr,vdvd.instr);//µØÖ·ÉÏÃæ·ÅÉÏexprÒ»¸ñ 
+					intj=0x17;//´¢´æÖ¸Áî 
+					returning.instr.list[returning.instr.length]=intj;
+					returning.instr.count++;
+					returning.instr.length++;
+					FUNCLIST[FUNCNUM].localtable[finding].valid=1;//ÒÑ¸³Öµ£¬ÓĞĞ§ 
+					return returning;
+				}
+			}
+		}
+		else if(veve==23)//×óÀ¨ºÅº¯Êıµ÷ÓÃ¡£¼ì²éÓëº¯Êı±íÀïÒÑÓĞµÄÇé¿öÊÇ·ñÒ»ÖÂ 
+		{
+			struct expression returning;
+			memset(&returning,0,sizeof(expression));//Çå¿Õ 
+			if(strcmp(ebeb,"getchar")==0)//0ºÅº¯ÊıÎŞ²ÎÊı£¬µ«ÒªÏÈ¿Õ³öÒ»¸ö·µ»ØÖµ 
+			{
+				int riri=nextToken();//ÓÒÀ¨ºÅ
+				if(riri!=24)
+				{
+					exit(-1);
+				}
+				returning.type=1;//·µ»Øint 
+				char caca=0x01;//pushÖ¸Áî 
+				returning.instr.list[returning.instr.length]=nene;
+				returning.instr.count++;
+				returning.instr.length++;
+				long long zeze=0;//push0×÷Îª·µ»ØÖµ 
+				storelong(&zeze,returning.instr.list,returning.instr.length);
+				returning.instr.length+=8;//Ò»¸ö64Î»Õ¼8¸öchar 
+				caca=0x4a;//callname
+				returning.instr.list[returning.instr.length]=caca;
+				returning.instr.count++;
+				returning.instr.length++;
+				int bsbs=0;//0ºÅº¯Êı 
+				storeint(bsbs,returning.instr.list,returning.instr.length);
+				returning.instr.length+=4;//Ò»¸ö32Î»Õ¼4¸öchar 
+				return returning;
+			}
+			else if(strcmp(ebeb,"getdouble")==0)//1ºÅº¯ÊıÎŞ²ÎÊı£¬µ«ÒªÏÈ¿Õ³öÒ»¸ö·µ»ØÖµ 
+			{
+				int riri=nextToken();//ÓÒÀ¨ºÅ
+				if(riri!=24)
+				{
+					exit(-1);
+				}
+				returning.type=2;//·µ»Ødouble
+				char caca=0x01;//pushÖ¸Áî 
+				returning.instr.list[returning.instr.length]=nene;
+				returning.instr.count++;
+				returning.instr.length++;
+				long long zeze=0;//push0×÷Îª·µ»ØÖµ 
+				storelong(&zeze,returning.instr.list,returning.instr.length);
+				returning.instr.length+=8;//Ò»¸ö64Î»Õ¼8¸öchar 
+				caca=0x4a;//callname
+				returning.instr.list[returning.instr.length]=caca;
+				returning.instr.count++;
+				returning.instr.length++;
+				int bsbs=1;//1ºÅº¯Êı 
+				storeint(bsbs,returning.instr.list,returning.instr.length);
+				returning.instr.length+=4;//Ò»¸ö32Î»Õ¼4¸öchar 
+				return returning;
+			}
+			else if(strcmp(ebeb,"getdouble")==0)//2ºÅº¯ÊıÎŞ²ÎÊı£¬µ«ÒªÏÈ¿Õ³öÒ»¸ö·µ»ØÖµ 
+			{
+				int riri=nextToken();//ÓÒÀ¨ºÅ
+				if(riri!=24)
+				{
+					exit(-1);
+				}
+				returning.type=1;//·µ»Øint 
+				char caca=0x01;//pushÖ¸Áî 
+				returning.instr.list[returning.instr.length]=nene;
+				returning.instr.count++;
+				returning.instr.length++;
+				long long zeze=0;//push0×÷Îª·µ»ØÖµ 
+				storelong(&zeze,returning.instr.list,returning.instr.length);
+				returning.instr.length+=8;//Ò»¸ö64Î»Õ¼8¸öchar 
+				caca=0x4a;//callname
+				returning.instr.list[returning.instr.length]=caca;
+				returning.instr.count++;
+				returning.instr.length++;
+				int bsbs=2;//2ºÅº¯Êı 
+				storeint(bsbs,returning.instr.list,returning.instr.length);
+				returning.instr.length+=4;//Ò»¸ö32Î»Õ¼4¸öchar 
+				return returning;
+			}
+			else if(strcmp(ebeb,"putchar")==0)//3ºÅº¯ÊıÓĞÒ»¸öÀàĞÍÎªint²ÎÊıexpr£¬ÎŞ·µ»ØÖµ 
+			{
+				struct expression ysys=expr();//½ÓÊÕÒ»¸öÕûÊıÀàĞÍexpr 
+				if(ysys.type!=1)
+				{
+					exit(-1);
+				}
+				int riri=nextToken();//ÓÒÀ¨ºÅ
+				if(riri!=24)
+				{
+					exit(-1);
+				}
+				returning.instr=instrcat(returning.instr,ysys.instr);//¸ã¶¨Õ»¶¥ 
+				char caca=0x4a;//callname
+				returning.instr.list[returning.instr.length]=caca;
+				returning.instr.count++;
+				returning.instr.length++;
+				int bsbs=3;//3ºÅº¯Êı 
+				storeint(bsbs,returning.instr.list,returning.instr.length);
+				returning.instr.length+=4;//Ò»¸ö32Î»Õ¼4¸öchar 
+				return returning;
+			}
+			else if(strcmp(ebeb,"putdouble")==0)//4ºÅº¯ÊıÓĞÒ»¸ödouble²ÎÊı£¬ÎŞ·µ»ØÖµ 
+			{
+				struct expression ysys=expr();//½ÓÊÕÒ»¸ö¸¡µãÊıÀàĞÍexpr 
+				if(ysys.type!=2)
+				{
+					exit(-1);
+				}
+				int riri=nextToken();//ÓÒÀ¨ºÅ
+				if(riri!=24)
+				{
+					exit(-1);
+				}
+				returning.instr=instrcat(returning.instr,ysys.instr);//¸ã¶¨Õ»¶¥ 
+				char caca=0x4a;//callname
+				returning.instr.list[returning.instr.length]=caca;
+				returning.instr.count++;
+				returning.instr.length++;
+				int bsbs=5;//5ºÅº¯Êı 
+				storeint(bsbs,returning.instr.list,returning.instr.length);
+				returning.instr.length+=4;//Ò»¸ö32Î»Õ¼4¸öchar 
+				return returning;
+			}
+			else if(strcmp(ebeb,"putint")==0)//5ºÅº¯ÊıÓĞÒ»¸öint²ÎÊı£¬ÎŞ·µ»ØÖµ 
+			{
+				struct expression ysys=expr();//½ÓÊÕÒ»¸öÕûÊıÀàĞÍexpr 
+				if(ysys.type!=1)
+				{
+					exit(-1);
+				}
+				int riri=nextToken();//ÓÒÀ¨ºÅ
+				if(riri!=24)
+				{
+					exit(-1);
+				}
+				returning.instr=instrcat(returning.instr,ysys.instr);//¸ã¶¨Õ»¶¥ 
+				char caca=0x4a;//callname
+				returning.instr.list[returning.instr.length]=caca;
+				returning.instr.count++;
+				returning.instr.length++;
+				int bsbs=5;//5ºÅº¯Êı 
+				storeint(bsbs,returning.instr.list,returning.instr.length);
+				returning.instr.length+=4;//Ò»¸ö32Î»Õ¼4¸öchar 
+				return returning;
+			}
+			else if(strcmp(ebeb,"putln")==0)//6ºÅº¯ÊıÎŞ²ÎÊı£¬ÎŞ·µ»ØÖµ 
+			{
+				int riri=nextToken();//ÓÒÀ¨ºÅ
+				if(riri!=24)
+				{
+					exit(-1);
+				}
+				char caca=0x4a;//callname
+				returning.instr.list[returning.instr.length]=caca;
+				returning.instr.count++;
+				returning.instr.length++;
+				int bsbs=6;//6ºÅº¯Êı 
+				storeint(bsbs,returning.instr.list,returning.instr.length);
+				returning.instr.length+=4;//Ò»¸ö32Î»Õ¼4¸öchar 
+				return returning;
+			}
+			else if(strcmp(ebeb,"putstr")==0)//7ºÅº¯Êı£¬Î¨Ò»µÄ×Ö·û´®²ÎÊı£¬ÎŞ·µ»ØÖµ 
+			{
+				int riri=nextToken();//Ò»¸ö×Ö·û´®¡£ÕâÊ±ºòÓ¦¸Ã°ÑËü·Åµ½±íÀï 
+				if(riri!=44)
+				{
+					exit(-1);
+				}
+				long long lololo=TABLETOP;//¼Ç×¡Ìîµ½ÄÄÒ»¸ñÁË 
+				strcpy(TABLE[TABLETOP].name,TOKEN);
+				TABLE[TABLETOP].isconst=1;//×Ö·û´®¶¼ÊÇ³£Á¿ 
+				TABLE[TABLETOP].type=0;//void
+				TABLE[TABLETOP].valid=1;//ÒÑ³õÊ¼»¯ 
+				char caca=0x01;//push
+				returning.instr.list[returning.instr.length]=caca;
+				returning.instr.count++;
+				returning.instr.length++;
+				storelong(&lololo,returning.instr.list,returning.instr.length);
+				returning.instr.length+=8;
+				caca=0x4a;//callname
+				returning.instr.list[returning.instr.length]=caca;
+				returning.instr.count++;
+				returning.instr.length++;
+				int bsbs=7;//7ºÅº¯Êı 
+				storeint(bsbs,returning.instr.list,returning.instr.length);
+				returning.instr.length+=4;//Ò»¸ö32Î»Õ¼4¸öchar 
+				return returning;
+			}
+			int wewe=find_func(ebeb);
+			if(wewe==-1)//µ÷ÓÃÁË²»´æÔÚµÄº¯Êı 
+			{
+				exit(-1);
+			}
+			
+			FUNCLIST[wewe].type
+			FUNCLIST[wewe].param[i].isconst
+			FUNCLIST[wewe].param[i].name
+			FUNCLIST[wewe].param[i].type
+			FUNCLIST[wewe].param[i].valid
+			FUNCLIST[wewe].paramcount
+			FUNCLIST[wewe].paramtop
+			FUNCLIST[wewe].name
+			
+			
+			
+			
+		}
+		else//²»ÊÇÒÔÉÏÁ½ÖÖÇé¿ö£¬ÒâÎ¶×Å¾ÍÊÇÒ»¸öÆÕÍ¨µÄ±êÊ¶·û¡£Õâ¸öÊ±ºòÒª°ÑÖµÈ¡³öÀ´·Åµ½Õ»¶¥ 
+		{
+			unreadToken();//ÍË»Ø¡£½ÓÏÂÀ´ÈÔ¾ÉÒª²é±í 
+			struct expression returning;
+			memset(&returning,0,sizeof(expression));//Çå¿Õ 
+			if(OVERALL==0)//È«¾ÖÌ¬¡£ÕâÊ±Ö»ĞèÒª²éÈ«¾Ö±äÁ¿±í¼´¿É 
+			{
+				int finding=find_table(ebeb);
+				if(finding==-1)
+				{
+					exit(-1);
+				}
+				else
+				{
+					if(TABLE[finding].type==0||TABLE[finding].valid==0)//ÏÈ¼ì²é±äÁ¿ÀàĞÍ£¬ÒÔ¼°ÊÇ·ñÓĞĞ§ 
+					{
+						exit(-1);
+					}
+					returning.type=TABLE[finding].type;//Õâ¸öexprÓĞtype 
+					char intj=0x0c;//¼ÓÔØÈ«¾ÖÖ¸Áî 
+					returning.instr.list[returning.instr.length]=intj;
+					returning.instr.count++;
+					returning.instr.length++;//¹â±êÏÈÒÆ¶¯
+					storeint(finding,returning.instr.list,returning.instr.length);
+					returning.instr.length+=4;//Ò»¸ö32Î»Õ¼4¸öchar 
+					intj=0x13;//È¡ÖµÑ¹Õ»Ö¸Áî 
+					returning.instr.list[returning.instr.length]=intj;
+					returning.instr.count++;
+					returning.instr.length++;
+					return returning;
+				}
+			}
+			else if(OVERALL==1)//º¯ÊıÌ¬¡£ÕâÊ±È«¶¼Òª²é 
+			{
+				int finding=find_all(ebeb,FUNCNUM);//ÏÈ²é¾Ö²¿±í¡£Òª²éÈ«Ìå
+				if(finding==-1)//Ã»²éµ½
+				{
+					finding=find_param(ebeb,FUNCNUM);//ÔÙ²é²ÎÁ¿±í
+					if(finding==-1)//Ã»²éµ½
+					{
+						finding=find_table(ebeb);//×îºó²éÈ«¾Ö±í
+						if(finding==-1)//¶¼Ã»²éµ½
+						{
+							exit(-1);
+						}
+						else//ÔÚÈ«¾Ö±í 
+						{
+							if(TABLE[finding].type==0||TABLE[finding].valid==0)//ÏÈ¼ì²é±äÁ¿ÀàĞÍ£¬ÒÔ¼°ÊÇ·ñÓĞĞ§ 
+							{
+								exit(-1);
+							}
+							returning.type=TABLE[finding].type;//Õâ¸öexprÓĞtype 
+							char intj=0x0c;//¼ÓÔØÈ«¾ÖÖ¸Áî 
+							returning.instr.list[temp.instr.length]=intj;
+							returning.instr.count++;
+							returning.instr.length++;//¹â±êÏÈÒÆ¶¯
+							storeint(finding,returning.instr.list,returning.instr.length);
+							returning.instr.length+=4;//Ò»¸ö32Î»Õ¼4¸öchar 
+							intj=0x13;//È¡ÖµÑ¹Õ»Ö¸Áî 
+							returning.instr.list[temp.instr.length]=intj;
+							returning.instr.count++;
+							returning.instr.length++;
+							return returning;
+						}
+					}
+					else//ÔÚ²ÎÁ¿±í
+					{
+						if(FUNCLIST[FUNCNUM].param[finding].type==0||FUNCLIST[FUNCNUM].param[finding].valid==0)//ÏÈ¼ì²é±äÁ¿ÀàĞÍ£¬ÒÔ¼°ÊÇ·ñÓĞĞ§ 
+						{
+							exit(-1);
+						}
+						returning.type=FUNCLIST[FUNCNUM].param[finding].type;//Õâ¸öexprÓĞtype 
+						char intj=0x0b;//¼ÓÔØ²ÎÊıÖ¸Áî 
+						returning.instr.list[returning.instr.length]=intj;
+						returning.instr.count++;
+						returning.instr.length++;//¹â±êÏÈÒÆ¶¯
+						storeint(finding,returning.instr.list,returning.instr.length);
+						returning.instr.length+=4;//Ò»¸ö32Î»Õ¼4¸öchar 
+						intj=0x13;//È¡ÖµÑ¹Õ»Ö¸Áî 
+						returning.instr.list[returning.instr.length]=intj;
+						returning.instr.count++;
+						returning.instr.length++;
+						return returning;
+					}
+				}
+				else//ÔÚ¾Ö²¿±í
+				{
+					if(FUNCLIST[FUNCNUM].localtable[finding].type==0||FUNCLIST[FUNCNUM].localtable[finding].valid==0)//ÏÈ¼ì²é±äÁ¿ÀàĞÍ£¬ÒÔ¼°ÊÇ·ñÓĞĞ§ 
+					{
+						exit(-1);
+					}
+					returning.type=FUNCLIST[FUNCNUM].localtable[finding].type;//Õâ¸öexprÓĞtype 
+					char intj=0x0a;//¼ÓÔØ¾Ö²¿Ö¸Áî 
+					returning.instr.list[returning.instr.length]=intj;
+					returning.instr.count++;
+					returning.instr.length++;//¹â±êÏÈÒÆ¶¯
+					storeint(finding,returning.instr.list,returning.instr.length);
+					returning.instr.length+=4;//Ò»¸ö32Î»Õ¼4¸öchar 
+					intj=0x13;//È¡ÖµÑ¹Õ»Ö¸Áî 
+					returning.instr.list[returning.instr.length]=intj;
+					returning.instr.count++;
+					returning.instr.length++;
+					return returning;
+				}
+			}
+			else
+			{
+				exit(-1);
+			}
+		}
 	}
 	else
 	{
@@ -1277,8 +1762,6 @@ struct instruction expr_stmt()
 	}
 	return temp;
 }
-
-int OVERALL;//±ê¼ÇÊÇ·ñÈ«¾ÖÉùÃ÷×´Ì¬¡£½øÈëº¯ÊıÊ±ÉèÖÃÎª1£¬ÍË³öÔòÎª0
 
 //ÉùÃ÷Óï¾ä²»¶Ô¡£expr´«¹ıÀ´µÄÓ¦µ±ÊÇÒ»¸öÓï¾äĞòÁĞ£¬Òò´Ë²»Ó¦µ±³õÊ¼»¯¡£ 
 //¸ù¾İÊÇ·ñÈ«¾Ö×´Ì¬À´½øĞĞ°²²å·ûºÅ±í 
@@ -1712,6 +2195,7 @@ void program()//³ÌĞò£¬±ØÈ»ÊÇ³£Á¿Óï¾ä£¨3£©¡¢±äÁ¿Óï¾ä£¨8£©»òº¯Êı£¨6£©
 	}
 }
 
+//ĞèÒªÒ»¿ªÊ¼°´Ë³Ğò·Å½øÈë7¸ö±ê×¼¿â 
 void init()//È«¾Ö±äÁ¿³õÊ¼»¯ 
 {
 	PREVALID=0;//Ô¤¶ÁÎŞĞ§ 
