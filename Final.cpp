@@ -566,120 +566,6 @@ int ty()//ÀàĞÍ£ºÈÔ¾ÉÎª±êÊ¶·û£¨51£©¡£²»×ö¿ªÍ·£¬²»µÃÔ¤¶Á
 	}
 }
 
-// ÔËËã·û±í´ïÊ½ operator_expr¡¢È¡·´±í´ïÊ½ negate_expr ºÍÀàĞÍ×ª»»±í´ïÊ½ as_expr ¿ÉÒÔÊ¹ÓÃ¾Ö²¿µÄËã·ûÓÅÏÈÎÄ·¨
-
-// ÔËËã·û±í´ïÊ½£¬×Ó±í´ïÊ½¿ªÍ·£¬ÓĞ×Ó±í´ïÊ½£¬ÕâÖ»´¦ÀíËãÊıÔËËã·û¡£ÔËËã·ûµÄÁ½²à±ØĞëÊÇÏàÍ¬ÀàĞÍµÄÊı¾İ 
-// ÓÅÏÈ¼¶ºÍË³Ğò
-// * /	×óµ½ÓÒ
-// + -	×óµ½ÓÒ
-// operator_expr -> expr binary_operator expr
-// binary_operator -> '+' | '-' | '*' | '/' 
-
-// ÒÔÏÂ×î¸ß 
-
-// À¨ºÅ±í´ïÊ½£¬¿ªÍ·×óĞ¡À¨ºÅ£¨23£©£¬ÓÅÏÈ¼ÆËã 
-// group_expr -> '(' expr ')'
-
-// ÒÔÏÂÊÓ×÷ÕûÌå 
-
-// ×ÖÃæÁ¿±í´ïÊ½£¬¿ªÍ·ÕûÊı£¨41£©¸¡µãÊı£¨42£©
-// literal_expr -> UINT_LITERAL | DOUBLE_LITERAL
-
-// ±êÊ¶·û±í´ïÊ½£¬Ö»ÓĞ±êÊ¶·û£¨51£©¿ªÍ·£¬ºó¿Õ¡£ÓïÒåÊÇ±êÊ¶·û¶ÔÓ¦µÄ¾Ö²¿»òÈ«¾Ö±äÁ¿¡£±êÊ¶·û±í´ïÊ½µÄÀàĞÍÓë±êÊ¶·ûµÄÀàĞÍÏàÍ¬
-// ident_expr -> IDENT
-
-//# ( + - * / ) ÕûÊı£¨41£©ºÍ¸¡µãÊı£¨42£©Í¬Ò»Àà
-//#Ö»ÄÜÊÇ·ÖºÅ;£¨29£©»ò×ó´óÀ¨ºÅ{£¨25£©£¬Ò»¶¨²»ÊÇEOF 
-int F[8]={0,0,2,2,4,4,5,5};//Õ»¶¥
-int G[8]={0,5,1,1,3,3,0,5};//¶ÁÈë
-
-//8a+b£¬¹²ÓĞ6¸ö·Ç·¨×´Ì¬£¬5¸öÌØÊâ×´Ì¬£¬1¸öµ÷ÓÃ×´Ì¬£¨×ó±êÊ¶·ûÓÒ×óÀ¨ºÅ£¬Îª8*±êÊ¶·û7+1=57£© 
-int ERROR[6]={0,6,8,49,55,63};
-int SPECIAL[5]={11,19,27,35,43}; 
-
-int translate(int t)//TOKEN·­ÒëÆ÷£¬±ØĞëÊÇÉÏÊö7ÖÖ·ûºÅ²ÅÄÜ½øÈë·­ÒëÆ÷£¬½ö²é±íÊ±ÓÃµ½ 
-{
-	switch(t)
-	{
-		case 25://×ó´óÀ¨ºÅ 
-		{
-			return 0;
-		}
-		case 27://¶ººÅ
-		{
-			return 0;
-		}
-		case 29://·ÖºÅ
-		{
-			return 0;
-		}
-		case 30://²»µÈÓÚºÅ
-		{
-			return 0;
-		}
-		case 34://Ğ¡ÓÚºÅ
-		{
-			return 0;
-		}
-		case 35://´óÓÚºÅ
-		{
-			return 0;
-		}
-		case 37://µÈÓÚµÈÓÚºÅ
-		{
-			return 0;
-		}
-		case 38://Ğ¡ÓÚµÈÓÚºÅ
-		{
-			return 0;
-		}
-		case 39://´óÓÚµÈÓÚºÅ
-		{
-			return 0;
-		}
-		case 23://×óÀ¨ºÅ 
-		{
-			return 1;
-		}
-		case 21://¼ÓºÅ 
-		{
-			return 2;
-		}
-		case 31://¼õºÅ 
-		{
-			return 3;
-		}
-		case 22://³ËºÅ 
-		{
-			return 4;
-		}
-		case 32://³ıºÅ 
-		{
-			return 5;
-		}
-		case 24://ÓÒÀ¨ºÅ 
-		{
-			return 6;
-		}
-		case 41://ÕûÊı 
-		{
-			return 7;
-		}
-		case 42://¸¡µãÊı 
-		{
-			return 7;
-		}
-		case 51://±êÊ¶·û 
-		{
-			return 7;
-		}
-		default://·Ç·¨¶ÁÈë±¨´í 
-		{
-			return -1;
-		}
-	}
-}
-
 struct instruction//Ö¸Áî½á¹¹Ìå 
 {
 	char list[1024];//Ö¸ÁîĞòÁĞ
@@ -737,6 +623,28 @@ void storedouble(double *temp,char chttt[],int i)//´ó¶Ë·¨½«64Î»£¨8×Ö½Ú£©Ö¸Áî´æÈë
     chttt[6]=(char)((*pr>> 8) & 0x00000000000000ffLL);
     chttt[7]=(char)((*pr>> 0) & 0x00000000000000ffLL);
 }
+
+// ÔËËã·û±í´ïÊ½ operator_expr¡¢È¡·´±í´ïÊ½ negate_expr ºÍÀàĞÍ×ª»»±í´ïÊ½ as_expr ¿ÉÒÔÊ¹ÓÃ¾Ö²¿µÄËã·ûÓÅÏÈÎÄ·¨
+
+// ÔËËã·û±í´ïÊ½£¬×Ó±í´ïÊ½¿ªÍ·£¬ÓĞ×Ó±í´ïÊ½£¬ÕâÖ»´¦ÀíËãÊıÔËËã·û¡£ÔËËã·ûµÄÁ½²à±ØĞëÊÇÏàÍ¬ÀàĞÍµÄÊı¾İ 
+// ÓÅÏÈ¼¶ºÍË³Ğò
+// * /	×óµ½ÓÒ
+// + -	×óµ½ÓÒ
+// operator_expr -> expr binary_operator expr
+// binary_operator -> '+' | '-' | '*' | '/' 
+
+// ÒÔÏÂ×î¸ß 
+
+// À¨ºÅ±í´ïÊ½£¬¿ªÍ·×óĞ¡À¨ºÅ£¨23£©£¬ÓÅÏÈ¼ÆËã 
+// group_expr -> '(' expr ')'
+
+// ÒÔÏÂÊÓ×÷ÕûÌå 
+
+// ×ÖÃæÁ¿±í´ïÊ½£¬¿ªÍ·ÕûÊı£¨41£©¸¡µãÊı£¨42£©
+// literal_expr -> UINT_LITERAL | DOUBLE_LITERAL
+
+// ±êÊ¶·û±í´ïÊ½£¬Ö»ÓĞ±êÊ¶·û£¨51£©¿ªÍ·£¬ºó¿Õ¡£ÓïÒåÊÇ±êÊ¶·û¶ÔÓ¦µÄ¾Ö²¿»òÈ«¾Ö±äÁ¿¡£±êÊ¶·û±í´ïÊ½µÄÀàĞÍÓë±êÊ¶·ûµÄÀàĞÍÏàÍ¬
+// ident_expr -> IDENT
 
 struct expression//±í´ïÊ½½á¹¹Ìå
 {
@@ -908,7 +816,6 @@ int FUNCNUM;//µ±Ç°±àÒëÆ÷´¦ÓÚ±àÒëÆ÷±àºÅÄÄ¸öº¯ÊıÖĞ¡£½øÈëº¯ÊıblockÊ±ÉèÖÃ
 
 struct expression expr();//»áµ÷ÓÃÖ÷³ÌĞò 
 
-//½öÎ´Íê³É±êÊ¶·û¡¢º¯Êıµ÷ÓÃºÍ¸³Öµ²¿·Ö 
 struct expression parse_primary()//½âÎöÒ»Ôª±í´ïÊ½¡£ÕâÀï´¦Àí×óÀ¨ºÅ¡¢º¯Êıµ÷ÓÃ¡¢Ç°ÖÃ-¡£Òò´ËÕâÈıÕß²»ÓÃÉèÖÃÓÅÏÈ¼¶¡£ÕâÀïË³±ã¿ÉÒÔ´¦Àí¸³Öµ²¿·Ö£¨ĞèÔ¤¶Á£© 
 {
 	int peek=nextToken();
@@ -1238,6 +1145,11 @@ struct expression parse_primary()//½âÎöÒ»Ôª±í´ïÊ½¡£ÕâÀï´¦Àí×óÀ¨ºÅ¡¢º¯Êıµ÷ÓÃ¡¢Ç°Ö
 				TABLE[TABLETOP].isconst=1;//×Ö·û´®¶¼ÊÇ³£Á¿ 
 				TABLE[TABLETOP].type=0;//void
 				TABLE[TABLETOP].valid=1;//ÒÑ³õÊ¼»¯ 
+				riri=nextToken();//ÓÒÀ¨ºÅ
+				if(riri!=24)
+				{
+					exit(-1);
+				}
 				char caca=0x01;//push
 				returning.instr.list[returning.instr.length]=caca;
 				returning.instr.count++;
@@ -1258,19 +1170,68 @@ struct expression parse_primary()//½âÎöÒ»Ôª±í´ïÊ½¡£ÕâÀï´¦Àí×óÀ¨ºÅ¡¢º¯Êıµ÷ÓÃ¡¢Ç°Ö
 			{
 				exit(-1);
 			}
-			
-			FUNCLIST[wewe].type
-			FUNCLIST[wewe].param[i].isconst
-			FUNCLIST[wewe].param[i].name
-			FUNCLIST[wewe].param[i].type
-			FUNCLIST[wewe].param[i].valid
-			FUNCLIST[wewe].paramcount
-			FUNCLIST[wewe].paramtop
-			FUNCLIST[wewe].name
-			
-			
-			
-			
+			if(FUNCLIST[wewe].type==1)//ĞèÒªÑ¹ÈëÒ»¸ö·µ»ØÖµ
+			{
+				returning.type=1;//·µ»Øint 
+				char caca=0x01;//pushÖ¸Áî 
+				returning.instr.list[returning.instr.length]=nene;
+				returning.instr.count++;
+				returning.instr.length++;
+				long long zeze=0;//push0×÷Îª·µ»ØÖµ 
+				storelong(&zeze,returning.instr.list,returning.instr.length);
+				returning.instr.length+=8;//Ò»¸ö64Î»Õ¼8¸öchar 
+			}
+			else if(FUNCLIST[wewe].type==2)//ĞèÒªÑ¹ÈëÒ»¸ö·µ»ØÖµ
+			{
+				returning.type=2;//·µ»Ødouble
+				char caca=0x01;//pushÖ¸Áî 
+				returning.instr.list[returning.instr.length]=nene;
+				returning.instr.count++;
+				returning.instr.length++;
+				long long zeze=0;//push0×÷Îª·µ»ØÖµ 
+				storelong(&zeze,returning.instr.list,returning.instr.length);
+				returning.instr.length+=8;//Ò»¸ö64Î»Õ¼8¸öchar 
+			}
+			if(FUNCLIST[wewe].paramcount!=0)//ĞèÒª¶ÁÓÒÀ¨ºÅÀïÃæµÄÄÚÈİ 
+			{
+				int fhfh=FUNCLIST[wewe].paramtop;//Õ»¶¥ 
+				int ouou=FUNCLIST[wewe].paramcount;//Ôİ´æ 
+				struct expression ysys=expr();//´¦ÀíµÚfhfh-ouou¸öexpr
+				if(ysys.type!=FUNCLIST[wewe].param[fhfh-ouou].type)//ÀàĞÍ²»Æ¥Åä 
+				{
+					exit(-1); 
+				}
+				returning.instr=instrcat(returning.instr,ysys.instr);//¸ã¶¨Õ»¶¥ 
+				ouou--;
+				while(ouou>0)//»¹ÓĞ²ÎÊı 
+				{
+					int pipi=nextToken();
+					if(pipi!=27)//¶ººÅ 
+					{
+						exit(-1);
+					}
+					struct expression ysys=expr();//´¦ÀíµÚfhfh-ouou¸öexpr
+					if(ysys.type!=FUNCLIST[wewe].param[fhfh-ouou].type)//ÀàĞÍ²»Æ¥Åä 
+					{
+						exit(-1); 
+					}
+					returning.instr=instrcat(returning.instr,ysys.instr);//¸ã¶¨Õ»¶¥ 
+					ouou--; 
+				}
+			}
+			int eheh=nextToken();
+			if(eheh!=24)//ÓÒÀ¨ºÅ
+			{
+				exit(-1); 
+			}
+			char jeje=0x4a;//callname
+			returning.instr.list[returning.instr.length]=jeje;
+			returning.instr.count++;
+			returning.instr.length++;
+			int bsbs=FUNCLIST[wewe].name;//destination
+			storeint(bsbs,returning.instr.list,returning.instr.length);
+			returning.instr.length+=4;//Ò»¸ö32Î»Õ¼4¸öchar 
+			return returning;
 		}
 		else//²»ÊÇÒÔÉÏÁ½ÖÖÇé¿ö£¬ÒâÎ¶×Å¾ÍÊÇÒ»¸öÆÕÍ¨µÄ±êÊ¶·û¡£Õâ¸öÊ±ºòÒª°ÑÖµÈ¡³öÀ´·Åµ½Õ»¶¥ 
 		{
@@ -1521,6 +1482,18 @@ int prec(int op)//²éÕÒÔËËã·ûÓÅÏÈ¼¶
 	}
 }
 
+int is_binary_op(int peek)
+{
+	if(peek==22||peek==32||peek==21||peek==31)//Ã»ÓĞÀ¨ºÅ¡¢¸³ÖµºÍas
+	{
+		return 1; 
+	}
+	else//ÈÏÎªÖÕ½á 
+	{
+		return 0;
+	}
+}
+
 struct expression parse_opg(struct expression lhs,int prec)//lhsÊÇ×ó²¿£¬precÊÇ×ó²¿ÓÅÏÈ¼¶¡£Ã¿´Îµ÷ÓÃÕâ¸öµÄÊ±ºò£¬ÏÂÒ»¸ö×ÜÓ¦¸ÃÊÇÔËËã·û¡£asÓ¦¸ÃÔÚÕâÀïÌØÅĞ 
 {
 	int peek=nextToken();//Ô¤¶ÁÏÂÒ»¸öÔËËã·û£¬precÊÇÓÅÏÈ¼¶
@@ -1762,6 +1735,9 @@ struct instruction expr_stmt()
 	}
 	return temp;
 }
+
+//ÉèÖÃÈ«¾Öinstruction¶Î 
+struct instruction STARTINSTR;//Ò»¸ö¾ÍĞĞ 
 
 //ÉùÃ÷Óï¾ä²»¶Ô¡£expr´«¹ıÀ´µÄÓ¦µ±ÊÇÒ»¸öÓï¾äĞòÁĞ£¬Òò´Ë²»Ó¦µ±³õÊ¼»¯¡£ 
 //¸ù¾İÊÇ·ñÈ«¾Ö×´Ì¬À´½øĞĞ°²²å·ûºÅ±í 
