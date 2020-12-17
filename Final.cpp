@@ -568,7 +568,7 @@ int ty()//ÀàĞÍ£ºÈÔ¾ÉÎª±êÊ¶·û£¨51£©¡£²»×ö¿ªÍ·£¬²»µÃÔ¤¶Á
 
 struct instruction//Ö¸Áî½á¹¹Ìå 
 {
-	char list[1024];//Ö¸ÁîĞòÁĞ
+	char list[2048];//Ö¸ÁîĞòÁĞ
 	char count;//Ö¸Áî¸öÊı 
 	int length;//Ö¸Áî³¤¶È 
 }; 
@@ -652,10 +652,10 @@ struct expression//±í´ïÊ½½á¹¹Ìå
 	struct instruction instr;//±í´ïÊ½µÄÖ¸ÁîÁĞ 
 };
 
-//0x0a	loca	off:u32	-	1:addr	¼ÓÔØ off ¸ö slot ´¦¾Ö²¿±äÁ¿µÄµØÖ·£¬´Óloc0¿ªÊ¼ 
-//0x0b	arga	off:u32	-	1:addr	¼ÓÔØ off ¸ö slot ´¦²ÎÊı/·µ»ØÖµµÄµØÖ·¡£·µ»ØÖµÊÇarg0£¨voidÃ»ÓĞ£©£¬²ÎÊı´Óarg1£¨arg0£¬void´Óarg1£©¿ªÊ¼¡£
+//0x0a loca off:u32 1:addr ¼ÓÔØ off ¸ö slot ´¦¾Ö²¿±äÁ¿µÄµØÖ·£¬´Óloc0¿ªÊ¼ 
+//0x0b arga off:u32 1:addr ¼ÓÔØ off ¸ö slot ´¦²ÎÊı/·µ»ØÖµµÄµØÖ·¡£·µ»ØÖµÊÇarg0£¨voidÃ»ÓĞ£©£¬²ÎÊı´Óarg1£¨arg0£¬void´Óarg1£©¿ªÊ¼¡£
 //²ÎÊı¾ùÒª³õÊ¼»¯¡£·µ»ØÖµÃ»ÓĞÃû×Ö£¬²»¿ÉÊ¹ÓÃ£¬ÈÏÎªÎ´³õÊ¼»¯ 
-//0x0c	globa	n:u32	-	1:addr	¼ÓÔØµÚ n ¸öÈ«¾Ö±äÁ¿/³£Á¿µÄµØÖ·¡£³£Á¿ÔÚÈ«¾Ö¡¢²ÎÊıºÍ¶¼¿ÉÒÔ¶¨Òå 
+//0x0c globa n:u32 1:addr ¼ÓÔØµÚ n ¸öÈ«¾Ö±äÁ¿/³£Á¿µÄµØÖ·¡£³£Á¿ÔÚÈ«¾Ö¡¢²ÎÊıºÍ¶¼¿ÉÒÔ¶¨Òå 
 //ĞèÒªÒ»¸öÈ«¾Ö±í£¬·ÅÈ«¾Ö±äÁ¿¡¢º¯ÊıÃûºÍ×Ö·û´®¡£²éÕÒÊ±±éÀú£¬²»ÔÚÕ»ÀïÃæ£¬²»ĞèÒªÕ» 
 
 struct symboltable//Á¿½á¹¹Ìå¡£
@@ -761,7 +761,7 @@ int find_all(char sss[],int func)//¸ù¾İ±äÁ¿Ãû²éÈ«Ìå²ã·ûºÅ±íÕ»¡£²éµ½·µ»ØÔÚÕ»ÖĞÏÂ±
 int find_now(char sss[],int func)//¸ù¾İ±äÁ¿Ãû²éµ±Ç°²ã·ûºÅ±íÕ»¡£²éµ½·µ»ØÔÚÕ»ÖĞÏÂ±ê£¬Î´²éµ½·µ»Ø-1¡£ 
 {
 	int i;
-	for(i=FUNCLIST[func].localstacktop-1;FUNCLIST[func].localstack[i].istop!=1&&i>=0;i--)//µ¹Ğò²é±í 
+	for(i=FUNCLIST[func].localstacktop-1;FUNCLIST[func].localstack[i].istop==0&&i>=0;i--)//µ¹Ğò²é±í 
 	{
 		if(strcmp(FUNCLIST[func].localtable[FUNCLIST[func].localstack[i].destination].name,sss)==0)
 		{
@@ -1909,11 +1909,255 @@ void let_decl_stmt()
 	free(iii);
 }
 
-void stmt();
+//brÏµÁĞ·ÖÖ§Ö¸Áî£¬Ö¸Áî»á½«£¨Ö¸ÏòÏÂÒ»ÌõÖ¸ÁîµÄ£©µ±Ç°Ö¸ÁîÖ¸Õë ip Óë offset Ïà¼ÓµÃ³öĞÂµÄÖ¸ÁîÖ¸ÕëµÄÖµ
+//±ÈÈçÈç¹û br 3 ÊÇÒ»¸öº¯ÊıµÄµÚ 5 ÌõÖ¸Áî£¬ÄÇÃ´´ËÊ± ip = 6£¬Ö¸ÁîÖ´ĞĞÖ®ºó ip = 6 + 3 = 9
+//0x41 ÎŞÌõ¼şÌø×ª
+//0x42 falseÌø×ª 
+//0x43 trueÌø×ª 
 
+//¸ù¾İ×îºóÌîÈë¸÷¸öint£¬¾ÍĞèÒªÖªµÀ´ıÌîÎ»ÖÃµÄÖ¸ÁîÆ«ÒÆÁ¿ÊÇ¶àÉÙ£¬ÒÔ¼°Êµ¼ÊcharÎ»ÖÃÊÇ¶àÉÙ 
+
+struct br//Æ«ÒÆ½á¹¹Ìå£¬´æ´¢×îºóbreakµÄÎ»ÖÃ¡£Õâ¸öÕ»¼ÇÂ¼Ö¸ÁîºÍchar³¤µ¥Î» 
+{
+	int length;//charÊı
+	int count;//Ö¸ÁîÊı 
+};
+
+struct br BREAKSTACK[32][32];//Ë«ÖØÑ­»·Õ»
+int BREAKSTACKTOP[32];//Ö¸Ê¾µ±Ç°Ñ­»·µÄÕ»¶¥¡£Ö»ÓĞÕ»¶¥ÖµÊÇÎŞĞ§µÄ¡£Ö»ÒªTOPTOP²»ÊÇ0£¬¾ÍÒª²»Í£µØ¸üĞÂÎ¬»¤Õ»¶¥Öµ 
+int BREAKSTACKTOPTOP;//Ö¸Ê¾ÔÚÄÄ¸öÑ­»·¡£Ò²ÓÃÓÚ¼ì²éÊÇ·ñÔÚÑ­»·ÄÚ 
+
+//continueÓï¾ä£¬ÒÔcontinue£¨4£©¿ªÍ· 
+//continue_stmt -> 'continue' ';'
+//ÓïÒåÊÇÎŞÌõ¼şÏòÇ°ÒÆ¶¯Èô¸ÉÌõÖ¸Áîµ½Ñ­»·×î¿ªÊ¼ 
+
+//breakÓï¾ä£¬ÒÔbreak£¨2£©¿ªÍ· 
+//break_stmt -> 'break' ';'
+//ÓïÒåÊÇÎŞÌõ¼şÏòºóÌø×ªÈô¸ÉÌõÖ¸Áîµ½Ñ­»·×îÄ©Î² 
+
+//whileÓï¾ä£¬ÒÔwhile£¨10£©¿ªÍ·£¬µ÷ÓÃbool±í´ïÊ½¡£¿ªÍ·±»Ô¤¶Á 
+//while_stmt -> 'while' expr block_stmt
+//µÚÒ»±éÔÚÑ­»·×îºóºÍcontinue´¦ÉèÖÃÎŞÌõ¼şÒÆ¶¯µ½Ñ­»·¿ªÍ·£¬È»ºóÔÚexpr²¿·ÖÄ©Î²ÉèÖÃfalseÒÆ¶¯µ½Ñ­»·×îÄ©Î²£¬×îºóÉèÖÃÎŞÌõ¼şbreak 
+//ÒòÎªcount´Ó0¿ªÊ¼£¬count++ºóÊÇcontinueÏò×óÆ«ÒÆÁ¿£¬Çó²îbreakÒ²ĞèÒªÍ³Ò»Îª++ºó 
+struct instruction while_stmt()
+{
+	BREAKSTACKTOPTOP++;//½øÈëÁËÒ»¸öĞÂÑ­»· 
+	BREAKSTACKTOP[BREAKSTACKTOPTOP-1]=0;//¸ÃÑ­»·Õ»¶¥³õÊ¼»¯ 
+	struct instruction bobo=bool_expr();//¾ùÒÑµ÷ÕûÎªbrfalse£¬²»Âú×ãÊ±Ìø×ª 
+	char flfl=0x42;//brfalse
+	bobo.list[bobo.length]=flfl;
+	bobo.count++;//µ±Ç°Ö¸ÁîÌõÊı¡£Ã¿¼Ó½øÀ´Ò»¸öÖ¸Áî¿é£¬¶¼Òª¼ÆËãĞÂµÄÖ¸ÁîÆ«ÒÆ±ä³ÉÁË¶àÉÙ 
+	bobo.length++;
+	int phph=0;//ÔÚfalseµÄÌø×ªÎ»ÖÃÏÈÌî¸ö0 
+	struct br falseloc;
+	falseloc.count=bobo.count;//ÒÑ¾­ÊÇ++ºóÁË 
+	falseloc.length=bobo.length;//ÒªÌîÔÚÕâ¸öÎ»ÖÃ 
+	storeint(phph,bobo.list,bobo.length);
+	bobo.length+=4;//Ò»¸ö32Î»Õ¼4¸öchar 
+	BREAKSTACK[BREAKSTACKTOPTOP-1][BREAKSTACKTOP[BREAKSTACKTOPTOP-1]].count=bobo.count;//ÒªÊµÏÖÇ¶Ì×Ìø×ª£¬Í¬²½¼ÇÂ¼Õ»¶¥ÖµÎ»ÖÃ£¬±£³ÖÊ¼ÖÕÓëÖ÷½á¹¹ÌåĞĞÎªÏàÍ¬ 
+	BREAKSTACK[BREAKSTACKTOPTOP-1][BREAKSTACKTOP[BREAKSTACKTOPTOP-1]].length=bobo.length;
+	int next=nextToken();
+	if(next!=25)
+	{
+		exit(-1);
+	}
+	int fafa=FUNCLIST[FUNCLISTTOP].localstacktop;//¾Ö²¿±äÁ¿Õ»ÈëÕ»²ãÉèÖÃ¡£µ±Ç°º¯Êı¾Ö²¿±äÁ¿Õ»¶¥Î» 
+	if(fafa!=0)//Õ»·Ç¿Õ 
+	{
+		FUNCLIST[FUNCLISTTOP].localstack[fafa-1].istop++;//Ç°Ò»²ã¶¥£¬ºóÒ»²ãÕ»µ×Ç° 
+	}
+	next=nextToken();
+	while(next!=26)//ÓÒ´óÀ¨ºÅ 
+	{
+		next=nextToken();//Áã´Î»ò¶à´Î 
+		switch(next)
+		{
+			case 3://²»»ØÍË 
+				struct instruction cscs=const_decl_stmt();//·ÇbreakĞĞÎª
+				bobo=instrcat(bobo,cscs);//Æ´½Ó 
+				BREAKSTACK[BREAKSTACKTOPTOP-1][BREAKSTACKTOP[BREAKSTACKTOPTOP-1]].count=bobo.count;
+				BREAKSTACK[BREAKSTACKTOPTOP-1][BREAKSTACKTOP[BREAKSTACKTOPTOP-1]].length=bobo.length;
+			break;
+			case 8://²»»ØÍË 
+				struct instruction cscs=let_decl_stmt();//·ÇbreakĞĞÎª
+				bobo=instrcat(bobo,cscs);//Æ´½Ó 
+				BREAKSTACK[BREAKSTACKTOPTOP-1][BREAKSTACKTOP[BREAKSTACKTOPTOP-1]].count=bobo.count;
+				BREAKSTACK[BREAKSTACKTOPTOP-1][BREAKSTACKTOP[BREAKSTACKTOPTOP-1]].length=bobo.length;
+			break;
+			case 7://²»»ØÍË 
+				struct instruction cscs=if_stmt();//breakĞĞÎª
+				bobo=instrcat(bobo,cscs);//Æ´½Ó 
+				BREAKSTACK[BREAKSTACKTOPTOP-1][BREAKSTACKTOP[BREAKSTACKTOPTOP-1]].count=bobo.count;
+				BREAKSTACK[BREAKSTACKTOPTOP-1][BREAKSTACKTOP[BREAKSTACKTOPTOP-1]].length=bobo.length;
+			break;
+			case 10://²»»ØÍË 
+				struct instruction cscs=while_stmt();//ĞÂÑ­»· 
+				bobo=instrcat(bobo,cscs);//Æ´½Ó 
+				BREAKSTACK[BREAKSTACKTOPTOP-1][BREAKSTACKTOP[BREAKSTACKTOPTOP-1]].count=bobo.count;
+				BREAKSTACK[BREAKSTACKTOPTOP-1][BREAKSTACKTOP[BREAKSTACKTOPTOP-1]].length=bobo.length;
+			break;
+			case 29://Ê²Ã´¶¼²»×ö 
+			break;
+			case 2://break
+				next=nextToken();//·ÖºÅ
+				if(next!=29)
+				{
+					exit(-1);
+				}
+				if(BREAKSTACKTOPTOP==0)//Ã»ÔÚÑ­»·Àï 
+				{
+					exit(-1);
+				}
+				flfl=0x41;//br
+				bobo.list[bobo.length]=flfl;
+				bobo.count++;//µ±Ç°Ö¸ÁîÌõÊı¡£Ã¿¼Ó½øÀ´Ò»¸öÖ¸Áî¿é£¬¶¼Òª¼ÆËãĞÂµÄÖ¸ÁîÆ«ÒÆ±ä³ÉÁË¶àÉÙ 
+				bobo.length++;
+				phph=0;//ÏÈÌî¸ö0 
+				BREAKSTACK[BREAKSTACKTOPTOP-1][BREAKSTACKTOP[BREAKSTACKTOPTOP-1]].count=bobo.count;//ÒÑ¾­ÊÇ++ºóÁË 
+				BREAKSTACK[BREAKSTACKTOPTOP-1][BREAKSTACKTOP[BREAKSTACKTOPTOP-1]].length=bobo.length;//ÒªÌîÔÚÕâ¸öÎ»ÖÃ 
+				BREAKSTACKTOP[BREAKSTACKTOPTOP-1]++;//´æÁËÒ»¸ö 
+				storeint(phph,bobo.list,bobo.length);
+				bobo.length+=4;//Ò»¸ö32Î»Õ¼4¸öchar 
+				BREAKSTACK[BREAKSTACKTOPTOP-1][BREAKSTACKTOP[BREAKSTACKTOPTOP-1]].count=bobo.count;
+				BREAKSTACK[BREAKSTACKTOPTOP-1][BREAKSTACKTOP[BREAKSTACKTOPTOP-1]].length=bobo.length;
+			break;
+			case 4://continue
+				next=nextToken();//·ÖºÅ
+				if(next!=29)
+				{
+					exit(-1);
+				}
+				if(BREAKSTACKTOPTOP==0)//Ã»ÔÚÑ­»·Àï 
+				{
+					exit(-1);
+				}
+				flfl=0x41;//br
+				bobo.list[bobo.length]=flfl;
+				bobo.count++;//µ±Ç°Ö¸ÁîÌõÊı¡£Ã¿¼Ó½øÀ´Ò»¸öÖ¸Áî¿é£¬¶¼Òª¼ÆËãĞÂµÄÖ¸ÁîÆ«ÒÆ±ä³ÉÁË¶àÉÙ 
+				bobo.length++;
+				phph=-bobo.count;//ÕâÀï»¹ÃãÇ¿¿ÉÒÔÕâÃ´×ö¡£µ½ÁËÆäËû¿éÀïÃæ±ØĞëÍ¬²½ 
+				storeint(phph,bobo.list,bobo.length);
+				bobo.length+=4;//Ò»¸ö32Î»Õ¼4¸öchar 
+				BREAKSTACK[BREAKSTACKTOPTOP-1][BREAKSTACKTOP[BREAKSTACKTOPTOP-1]].count=bobo.count;
+				BREAKSTACK[BREAKSTACKTOPTOP-1][BREAKSTACKTOP[BREAKSTACKTOPTOP-1]].length=bobo.length;
+			break;
+			case 9://return
+				next=nextToken();//·ÖºÅ»òexpr 
+				if(next!=29)
+				{
+					expr();
+					next=nextToken();//·ÖºÅ
+					if(next!=29)
+					{
+						exit(-1);
+					}
+				}
+				char rtrt=0x49;//ret
+				bobo.list[bobo.length]=rtrt;
+				bobo.count++;//µ±Ç°Ö¸ÁîÌõÊı¡£Ã¿¼Ó½øÀ´Ò»¸öÖ¸Áî¿é£¬¶¼Òª¼ÆËãĞÂµÄÖ¸ÁîÆ«ÒÆ±ä³ÉÁË¶àÉÙ 
+				bobo.length++;
+				BREAKSTACK[BREAKSTACKTOPTOP-1][BREAKSTACKTOP[BREAKSTACKTOPTOP-1]].count=bobo.count;
+				BREAKSTACK[BREAKSTACKTOPTOP-1][BREAKSTACKTOP[BREAKSTACKTOPTOP-1]].length=bobo.length;
+			break;
+			case 25://block_stmt£¬»ØÍË 
+				unreadToken();
+				struct instruction cscs=block_stmt();//breakĞĞÎª
+				bobo=instrcat(bobo,cscs);//Æ´½Ó 
+				BREAKSTACK[BREAKSTACKTOPTOP-1][BREAKSTACKTOP[BREAKSTACKTOPTOP-1]].count=bobo.count;
+				BREAKSTACK[BREAKSTACKTOPTOP-1][BREAKSTACKTOP[BREAKSTACKTOPTOP-1]].length=bobo.length;
+			break;
+			case 23:
+				unreadToken();
+				struct instruction cscs=expr_stmt();//·ÇbreakĞĞÎª
+				bobo=instrcat(bobo,cscs);//Æ´½Ó 
+				BREAKSTACK[BREAKSTACKTOPTOP-1][BREAKSTACKTOP[BREAKSTACKTOPTOP-1]].count=bobo.count;
+				BREAKSTACK[BREAKSTACKTOPTOP-1][BREAKSTACKTOP[BREAKSTACKTOPTOP-1]].length=bobo.length;
+			break;
+			case 31:
+				unreadToken();
+				struct instruction cscs=expr_stmt();//·ÇbreakĞĞÎª
+				bobo=instrcat(bobo,cscs);//Æ´½Ó 
+				BREAKSTACK[BREAKSTACKTOPTOP-1][BREAKSTACKTOP[BREAKSTACKTOPTOP-1]].count=bobo.count;
+				BREAKSTACK[BREAKSTACKTOPTOP-1][BREAKSTACKTOP[BREAKSTACKTOPTOP-1]].length=bobo.length;
+			break;
+			case 41:
+				unreadToken();
+				struct instruction cscs=expr_stmt();//·ÇbreakĞĞÎª
+				bobo=instrcat(bobo,cscs);//Æ´½Ó 
+				BREAKSTACK[BREAKSTACKTOPTOP-1][BREAKSTACKTOP[BREAKSTACKTOPTOP-1]].count=bobo.count;
+				BREAKSTACK[BREAKSTACKTOPTOP-1][BREAKSTACKTOP[BREAKSTACKTOPTOP-1]].length=bobo.length;
+			break;
+			case 42:
+				unreadToken();
+				struct instruction cscs=expr_stmt();//·ÇbreakĞĞÎª
+				bobo=instrcat(bobo,cscs);//Æ´½Ó 
+				BREAKSTACK[BREAKSTACKTOPTOP-1][BREAKSTACKTOP[BREAKSTACKTOPTOP-1]].count=bobo.count;
+				BREAKSTACK[BREAKSTACKTOPTOP-1][BREAKSTACKTOP[BREAKSTACKTOPTOP-1]].length=bobo.length;
+			break;
+			case 51:
+				unreadToken();
+				struct instruction cscs=expr_stmt();//·ÇbreakĞĞÎª
+				bobo=instrcat(bobo,cscs);//Æ´½Ó 
+				BREAKSTACK[BREAKSTACKTOPTOP-1][BREAKSTACKTOP[BREAKSTACKTOPTOP-1]].count=bobo.count;
+				BREAKSTACK[BREAKSTACKTOPTOP-1][BREAKSTACKTOP[BREAKSTACKTOPTOP-1]].length=bobo.length;
+			break;
+			default:
+				exit(-1);
+			break; 
+		}
+		next=nextToken();
+	}
+	fafa=FUNCLIST[FUNCLISTTOP].localstacktop;//¾Ö²¿±äÁ¿Õ»³öÕ»²ãÉèÖÃ
+	if(fafa>0)//Õ»·Ç¿Õ 
+	{
+		for(fafa=FUNCLIST[FUNCLISTTOP].localstacktop-1;fafa>=0;fafa--)
+		{
+			if(FUNCLIST[FUNCLISTTOP].localstack[fafa].istop!=0)
+			{
+				break;
+			}
+		}
+		if(fafa>=0)//ÕâÎ»ÖÃÊÇÇ°Ò»¸öÕ»¶¥ 
+		{
+			FUNCLIST[FUNCLISTTOP].localstack[fafa].istop--;
+		}
+		FUNCLIST[FUNCLISTTOP].localstacktop==fafa+1;//·ñÔòfafaÊÇ-1£¬Õâ¸öÊ½×ÓÒ²Ã»´í 
+	}
+	flfl=0x41;//Ïàµ±ÓÚ×îºó»¹ÓĞÒ»¸öcontinue 
+	bobo.list[bobo.length]=flfl;
+	bobo.count++;//µ±Ç°Ö¸ÁîÌõÊı¡£Ã¿¼Ó½øÀ´Ò»¸öÖ¸Áî¿é£¬¶¼Òª¼ÆËãĞÂµÄÖ¸ÁîÆ«ÒÆ±ä³ÉÁË¶àÉÙ 
+	bobo.length++;
+	phph=-bobo.count;
+	storeint(phph,bobo.list,bobo.length);
+	bobo.length+=4;//Ò»¸ö32Î»Õ¼4¸öchar 
+	int lala=bobo.count;
+	int falsebr=lala-falseloc.count;//´æfalseÌø×ª 
+	storeint(falsebr,bobo.list,falseloc.length);
+	int kaka;
+	for(kaka=0;kaka<BREAKSTACKTOP[BREAKSTACKTOPTOP-1];kaka++)//´æbreakÌø×ª 
+	{
+		int hrhr=lala-BREAKSTACK[BREAKSTACKTOPTOP-1][kaka].count;
+		storeint(hrhr,bobo.list,BREAKSTACK[BREAKSTACKTOPTOP-1][kaka].length);
+	}
+	BREAKSTACKTOPTOP--;//ÍË³öÁËÕâ¸öÑ­»· 
+	return bobo;//¼Ó¹¤Íê±Ï·µ»Ø
+}
+
+//returnÓï¾ä£¬ÒÔreturn£¨9£©¿ªÍ· 
+//return_stmt -> 'return' expr? ';'
+
+//¿ÕÓï¾ä£¬ÒÔ·ÖºÅ£¨29£©¿ªÍ· 
+//empty_stmt -> ';'
+
+//Óï¾ä£¬9ÖÖÇé¿ö£¨10ÖÖÇé¿ö£©£¬²»µÃÔ¤¶Á 
+//stmt ->expr_stmt£¨23£©£¨31£©£¨41£©£¨42£©£¨51£©| decl_stmt| if_stmt£¨7£©| while_stmt£¨10£©| break_stmt£¨2£©| continue_stmt£¨4£©| return_stmt£¨9£©| block_stmt£¨25£©| empty_stmt£¨29£©
+//decl_stmt -> let_decl_stmt£¨8£© | const_decl_stmt£¨3£© 
+
+
+//Î´Íê³É 
 //blockÓï¾ä£¬ÒÔ×ó´óÀ¨ºÅ£¨25£©¿ªÍ·£¬²»µÃÔ¤¶Á 
 //block_stmt -> '{' stmt* '}'
-void block_stmt()
+struct instruction block_stmt()
 {
 	int next=nextToken();
 	if(next!=25)
@@ -1923,7 +2167,106 @@ void block_stmt()
 	next=nextToken();
 	while(next!=26)//ÓÒ´óÀ¨ºÅ 
 	{
-		stmt();//Áã´Î»ò¶à´Î 
+		int next=nextToken();//Áã´Î»ò¶à´Î 
+		switch(next)
+		{
+			case 3://²»»ØÍË 
+				const_decl_stmt();
+			break;
+			case 8://²»»ØÍË 
+				let_decl_stmt();
+			break;
+			case 7://²»»ØÍË 
+				if_stmt();
+			break;
+			case 10://²»»ØÍË 
+				while_stmt();
+			break;
+			case 29://Ê²Ã´¶¼²»×ö 
+			break;
+			case 2://break
+				next=nextToken();//·ÖºÅ
+				if(next!=29)
+				{
+					exit(-1);
+				}
+				if(BREAKSTACKTOPTOP==0)//Ã»ÔÚÑ­»·Àï 
+				{
+					exit(-1);
+				}
+				flfl=0x41;//br
+				bobo.list[bobo.length]=flfl;
+				bobo.count++;//µ±Ç°Ö¸ÁîÌõÊı¡£Ã¿¼Ó½øÀ´Ò»¸öÖ¸Áî¿é£¬¶¼Òª¼ÆËãĞÂµÄÖ¸ÁîÆ«ÒÆ±ä³ÉÁË¶àÉÙ 
+				bobo.length++;
+				phph=0;//ÏÈÌî¸ö0 
+				BREAKSTACK[BREAKSTACKTOPTOP-1][BREAKSTACKTOP[BREAKSTACKTOPTOP-1]].count=bobo.count;//ÒÑ¾­ÊÇ++ºóÁË 
+				BREAKSTACK[BREAKSTACKTOPTOP-1][BREAKSTACKTOP[BREAKSTACKTOPTOP-1]].length=bobo.length;//ÒªÌîÔÚÕâ¸öÎ»ÖÃ 
+				BREAKSTACKTOP[BREAKSTACKTOPTOP-1]++;//´æÁËÒ»¸ö 
+				storeint(phph,bobo.list,bobo.length);
+				bobo.length+=4;//Ò»¸ö32Î»Õ¼4¸öchar 
+				BREAKSTACK[BREAKSTACKTOPTOP-1][BREAKSTACKTOP[BREAKSTACKTOPTOP-1]].count=bobo.count;
+				BREAKSTACK[BREAKSTACKTOPTOP-1][BREAKSTACKTOP[BREAKSTACKTOPTOP-1]].length=bobo.length;
+			break;
+			case 4://continue
+				next=nextToken();//·ÖºÅ
+				if(next!=29)
+				{
+					exit(-1);
+				}
+				if(BREAKSTACKTOPTOP==0)//Ã»ÔÚÑ­»·Àï 
+				{
+					exit(-1);
+				}
+				flfl=0x41;//br
+				bobo.list[bobo.length]=flfl;
+				bobo.count++;//µ±Ç°Ö¸ÁîÌõÊı¡£Ã¿¼Ó½øÀ´Ò»¸öÖ¸Áî¿é£¬¶¼Òª¼ÆËãĞÂµÄÖ¸ÁîÆ«ÒÆ±ä³ÉÁË¶àÉÙ 
+				bobo.length++;
+				phph=-bobo.count;//ÕâÀï»¹ÃãÇ¿¿ÉÒÔÕâÃ´×ö¡£µ½ÁËÆäËû¿éÀïÃæ±ØĞëÍ¬²½ 
+				storeint(phph,bobo.list,bobo.length);
+				bobo.length+=4;//Ò»¸ö32Î»Õ¼4¸öchar 
+				BREAKSTACK[BREAKSTACKTOPTOP-1][BREAKSTACKTOP[BREAKSTACKTOPTOP-1]].count=bobo.count;
+				BREAKSTACK[BREAKSTACKTOPTOP-1][BREAKSTACKTOP[BREAKSTACKTOPTOP-1]].length=bobo.length;
+			break;
+			case 9://return
+				next=nextToken();//·ÖºÅ»òexpr 
+				if(next!=29)
+				{
+					expr();
+					next=nextToken();//·ÖºÅ
+					if(next!=29)
+					{
+						exit(-1);
+					}
+				}
+			break;
+			case 25://block_stmt£¬»ØÍË 
+				unreadToken();
+				block_stmt(); 
+			break;
+			case 23:
+				unreadToken();
+				expr_stmt(); 
+			break;
+			case 31:
+				unreadToken();
+				expr_stmt(); 
+			break;
+			case 41:
+				unreadToken();
+				expr_stmt(); 
+			break;
+			case 42:
+				unreadToken();
+				expr_stmt(); 
+			break;
+			case 51:
+				unreadToken();
+				expr_stmt(); 
+			break;
+			default:
+				exit(-1);
+			break; 
+		}
 		next=nextToken();
 	}
 }
@@ -1954,102 +2297,9 @@ void if_stmt()
 	unreadToken();//Ä©Î²Ò»¶¨»ØÍË 
 }
 
-//whileÓï¾ä£¬ÒÔwhile£¨10£©¿ªÍ·£¬µ÷ÓÃbool±í´ïÊ½¡£¿ªÍ·±»Ô¤¶Á 
-//while_stmt -> 'while' expr block_stmt
-void while_stmt()
-{
-	bool_expr();
-	block_stmt();
-}
-
-//returnÓï¾ä£¬ÒÔreturn£¨9£©¿ªÍ· 
-//return_stmt -> 'return' expr? ';'
-
-//breakÓï¾ä£¬ÒÔbreak£¨2£©¿ªÍ· 
-//break_stmt -> 'break' ';'
-
-//continueÓï¾ä£¬ÒÔcontinue£¨4£©¿ªÍ· 
-//continue_stmt -> 'continue' ';'
-
-//¿ÕÓï¾ä£¬ÒÔ·ÖºÅ£¨29£©¿ªÍ· 
-//empty_stmt -> ';'
-
-//Óï¾ä£¬9ÖÖÇé¿ö£¨10ÖÖÇé¿ö£©£¬²»µÃÔ¤¶Á 
-//stmt ->expr_stmt£¨23£©£¨31£©£¨41£©£¨42£©£¨51£©| decl_stmt| if_stmt£¨7£©| while_stmt£¨10£©| break_stmt£¨2£©| continue_stmt£¨4£©| return_stmt£¨9£©| block_stmt£¨25£©| empty_stmt£¨29£©
-//decl_stmt -> let_decl_stmt£¨8£© | const_decl_stmt£¨3£© 
 void stmt()
 {
-	int next=nextToken();
-	switch(next)
-	{
-		case 3://²»»ØÍË 
-			const_decl_stmt();
-		break;
-		case 8://²»»ØÍË 
-			let_decl_stmt();
-		break;
-		case 7://²»»ØÍË 
-			if_stmt();
-		break;
-		case 10://²»»ØÍË 
-			while_stmt();
-		break;
-		case 29://Ê²Ã´¶¼²»×ö 
-		break;
-		case 2://break
-			next=nextToken();//·ÖºÅ
-			if(next!=29)
-			{
-				exit(-1);
-			}
-		break;
-		case 4://continue
-			next=nextToken();//·ÖºÅ
-			if(next!=29)
-			{
-				exit(-1);
-			}
-		break;
-		case 9://return
-			next=nextToken();//·ÖºÅ»òexpr 
-			if(next!=29)
-			{
-				expr();
-				next=nextToken();//·ÖºÅ
-				if(next!=29)
-				{
-					exit(-1);
-				}
-			}
-		break;
-		case 25://block_stmt£¬»ØÍË 
-			unreadToken();
-			block_stmt(); 
-		break;
-		case 23:
-			unreadToken();
-			expr(); 
-		break;
-		case 31:
-			unreadToken();
-			expr(); 
-		break;
-		case 41:
-			unreadToken();
-			expr(); 
-		break;
-		case 42:
-			unreadToken();
-			expr(); 
-		break;
-		case 51:
-			unreadToken();
-			expr(); 
-		break;
-		default:
-			exit(-1);
-		break; 
-	}
+	
 }
 
 //function_param -> 'const'? IDENT ':' ty
