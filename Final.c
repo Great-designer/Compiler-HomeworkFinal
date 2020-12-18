@@ -2711,6 +2711,17 @@ void lastcheck()//设置入口点。假设之前编译部分全做完了
 		efef.count++;
 		efef.length++;
 	}
+	int wewe=find_func(chte);
+	if(FUNCLIST[wewe].type==1||FUNCLIST[wewe].type==2)//需要压入一个返回值
+	{
+		char caca=0x01;//push指令 
+		efef.list[efef.length]=caca;
+		efef.count++;
+		efef.length++;
+		long long zeze=0;//push0作为返回值 
+		storelong(&zeze,efef.list,efef.length);
+		efef.length+=8;//一个64位占8个char 
+	}
 	FUNCLIST[FUNCLISTTOP].instr=instrcat(efef,FUNCLIST[FUNCLISTTOP].instr);//初始化部分接到前面 
 	FUNCLISTTOP++; 
 }
