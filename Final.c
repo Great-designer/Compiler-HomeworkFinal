@@ -605,10 +605,10 @@ void storelong(long long *pr,char chttt[],int i)//´ó¶Ë·¨½«64Î»£¨8×Ö½Ú£©Ö¸Áî´æÈëÖ
     chttt[i+1]=(char)((*pr>>48) & 0x00000000000000ffLL);
     chttt[i+2]=(char)((*pr>>40) & 0x00000000000000ffLL);
     chttt[i+3]=(char)((*pr>>32) & 0x00000000000000ffLL);
-	chttt[4]=(char)((*pr>>24) & 0x00000000000000ffLL);
-    chttt[5]=(char)((*pr>>16) & 0x00000000000000ffLL);
-    chttt[6]=(char)((*pr>> 8) & 0x00000000000000ffLL);
-    chttt[7]=(char)((*pr>> 0) & 0x00000000000000ffLL);
+	chttt[i+4]=(char)((*pr>>24) & 0x00000000000000ffLL);
+    chttt[i+5]=(char)((*pr>>16) & 0x00000000000000ffLL);
+    chttt[i+6]=(char)((*pr>> 8) & 0x00000000000000ffLL);
+    chttt[i+7]=(char)((*pr>> 0) & 0x00000000000000ffLL);
 }
 
 void storedouble(double *temp,char chttt[],int i)//´ó¶Ë·¨½«64Î»£¨8×Ö½Ú£©Ö¸Áî´æÈëÖ¸¶¨Î»ÖÃ¡£Õâ¸ö´«Ö· 
@@ -618,10 +618,10 @@ void storedouble(double *temp,char chttt[],int i)//´ó¶Ë·¨½«64Î»£¨8×Ö½Ú£©Ö¸Áî´æÈë
     chttt[i+1]=(char)((*pr>>48) & 0x00000000000000ffLL);
     chttt[i+2]=(char)((*pr>>40) & 0x00000000000000ffLL);
     chttt[i+3]=(char)((*pr>>32) & 0x00000000000000ffLL);
-	chttt[4]=(char)((*pr>>24) & 0x00000000000000ffLL);
-    chttt[5]=(char)((*pr>>16) & 0x00000000000000ffLL);
-    chttt[6]=(char)((*pr>> 8) & 0x00000000000000ffLL);
-    chttt[7]=(char)((*pr>> 0) & 0x00000000000000ffLL);
+	chttt[i+4]=(char)((*pr>>24) & 0x00000000000000ffLL);
+    chttt[i+5]=(char)((*pr>>16) & 0x00000000000000ffLL);
+    chttt[i+6]=(char)((*pr>> 8) & 0x00000000000000ffLL);
+    chttt[i+7]=(char)((*pr>> 0) & 0x00000000000000ffLL);
 }
 
 // ÔËËã·û±í´ïÊ½ operator_expr¡¢È¡·´±í´ïÊ½ negate_expr ºÍÀàÐÍ×ª»»±í´ïÊ½ as_expr ¿ÉÒÔÊ¹ÓÃ¾Ö²¿µÄËã·ûÓÅÏÈÎÄ·¨
