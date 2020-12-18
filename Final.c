@@ -665,6 +665,7 @@ struct symboltable//量结构体。
 	int valid;//未初始化为0，初始化为1 
 	int type;//1为int，2为double（都是64），0为void字符串（函数名或者字符串）。int和double的初始化都在_start中 
 	struct instruction instr;//初始化指令。仅全局为void字符串时无指令 
+	int init;//是否需要初始化 
 }; 
 
 struct symboltable TABLE[128];//全局表。所有的函数名字都要存进去。均不用初始化，就不用存值  
@@ -1787,6 +1788,7 @@ void const_decl_stmt()
 		strcpy(TABLE[TABLETOP].name,iii);
 		TABLE[TABLETOP].isconst=1;
 		TABLE[TABLETOP].valid=1;
+		TABLE[TABLETOP].init=1; 
 		TABLE[TABLETOP].type=typpp;
 		TABLE[TABLETOP].instr=instrcat(TABLE[TABLETOP].instr,ucuc.instr);//搞定初始化指令 
 		TABLETOP++;
@@ -1805,6 +1807,7 @@ void const_decl_stmt()
 		strcpy(FUNCLIST[FUNCLISTTOP].localtable[FUNCLIST[FUNCLISTTOP].localtabletop].name,iii);
 		FUNCLIST[FUNCLISTTOP].localtable[FUNCLIST[FUNCLISTTOP].localtabletop].isconst=1;
 		FUNCLIST[FUNCLISTTOP].localtable[FUNCLIST[FUNCLISTTOP].localtabletop].valid=1;
+		FUNCLIST[FUNCLISTTOP].localtable[FUNCLIST[FUNCLISTTOP].localtabletop].init=1;
 		FUNCLIST[FUNCLISTTOP].localtable[FUNCLIST[FUNCLISTTOP].localtabletop].type=typpp;
 		FUNCLIST[FUNCLISTTOP].localtable[FUNCLIST[FUNCLISTTOP].localtabletop].instr=instrcat(FUNCLIST[FUNCLISTTOP].localtable[FUNCLIST[FUNCLISTTOP].localtabletop].instr,ucuc.instr);
 		FUNCLIST[FUNCLISTTOP].localtabletop++;//参量表填写完毕 
@@ -1848,6 +1851,7 @@ void let_decl_stmt()
 			strcpy(TABLE[TABLETOP].name,iii);
 			TABLE[TABLETOP].type=typpp;
 			TABLE[TABLETOP].valid=1;
+			TABLE[TABLETOP].init=1;
 			TABLE[TABLETOP].instr=instrcat(TABLE[TABLETOP].instr,ucuc.instr);//搞定初始化指令 
 			TABLETOP++;
 		}
@@ -1865,6 +1869,7 @@ void let_decl_stmt()
 			strcpy(FUNCLIST[FUNCLISTTOP].localtable[FUNCLIST[FUNCLISTTOP].localtabletop].name,iii);
 			FUNCLIST[FUNCLISTTOP].localtable[FUNCLIST[FUNCLISTTOP].localtabletop].type=typpp;
 			FUNCLIST[FUNCLISTTOP].localtable[FUNCLIST[FUNCLISTTOP].localtabletop].valid=1;
+			FUNCLIST[FUNCLISTTOP].localtable[FUNCLIST[FUNCLISTTOP].localtabletop].init=1;
 			FUNCLIST[FUNCLISTTOP].localtable[FUNCLIST[FUNCLISTTOP].localtabletop].instr=instrcat(FUNCLIST[FUNCLISTTOP].localtable[FUNCLIST[FUNCLISTTOP].localtabletop].instr,ucuc.instr);
 			FUNCLIST[FUNCLISTTOP].localtabletop++;//参量表填写完毕 
 		}
@@ -2553,7 +2558,7 @@ void function()//函数，以fn（6）开头。规定开头调用前已经被读了，下一个默认是标识
 	int pkpk;
 	for(pkpk=0;pkpk<FUNCLIST[FUNCLISTTOP].localtabletop;pkpk++)//要初始化局部变量，在函数指令序列开头 
 	{
-		if(FUNCLIST[FUNCLISTTOP].localtable[pkpk].valid==0)//没初始化 
+		if(FUNCLIST[FUNCLISTTOP].localtable[pkpk].init==0)//没初始化 
 		{
 			continue; 
 		}
@@ -2695,7 +2700,7 @@ void lastcheck()//设置入口点。假设之前编译部分全做完了
 	int pkpk;
 	for(pkpk=0;pkpk<TABLETOP;pkpk++)//要初始化全局变量，在函数指令序列开头 
 	{
-		if(TABLE[TABLETOP].valid==0||TABLE[TABLETOP].type==0)//没初始化或者是字符串 
+		if(TABLE[TABLETOP].init==0||TABLE[TABLETOP].type==0)//没初始化或者是字符串 
 		{
 			continue; 
 		}
@@ -2758,13 +2763,12 @@ void outdouble(double *temp)
 int main(int argc,char *argv[])
 {
 	IN=fopen(argv[1],"r");
+	OUT=fopen(argv[3],"wb");
 //	IN=fopen("in.txt","r");
+//	OUT=fopen("o0.bin","wb");
 	init(); 
 	program();//这里是编译主体 
-	lastcheck(); 
-	FILE *outfp;  
-//	OUT=fopen("o0.bin","wb");
-	OUT=fopen(argv[3],"wb");
+	lastcheck();
 	int temp=0x72303b3e;
 	outint(temp);//魔数
 	temp=0x00000001;
