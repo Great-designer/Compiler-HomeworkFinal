@@ -2153,34 +2153,49 @@ struct instruction while_stmt()
 //stmt ->expr_stmt（23）（31）（41）（42）（51）| decl_stmt| if_stmt（7）| while_stmt（10）| break_stmt（2）| continue_stmt（4）| return_stmt（9）| block_stmt（25）| empty_stmt（29）
 //decl_stmt -> let_decl_stmt（8） | const_decl_stmt（3） 
 
-
-//未完成 
 //block语句，以左大括号（25）开头，不得预读 
 //block_stmt -> '{' stmt* '}'
 struct instruction block_stmt()
 {
+	struct instruction blbl;//待返回结构体 
+	memset(blbl,0,sizeof(struct instruction));//清空 
 	int next=nextToken();
 	if(next!=25)
 	{
 		exit(-1);
 	}
-	next=nextToken();
+	int fafa=FUNCLIST[FUNCLISTTOP].localstacktop;//局部变量栈入栈层设置。当前函数局部变量栈顶位 
+	if(fafa!=0)//栈非空 
+	{
+		FUNCLIST[FUNCLISTTOP].localstack[fafa-1].istop++;//前一层顶，后一层栈底前 
+	}
+	next=nextToken();//未加指令，不必改动while栈顶 
 	while(next!=26)//右大括号 
 	{
 		int next=nextToken();//零次或多次 
 		switch(next)
 		{
 			case 3://不回退 
-				const_decl_stmt();
+				struct instruction cscs=const_decl_stmt();//非break行为
+				blbl=instrcat(blbl,cscs);
+				BREAKSTACK[BREAKSTACKTOPTOP-1][BREAKSTACKTOP[BREAKSTACKTOPTOP-1]].count+=cscs.count;
+				BREAKSTACK[BREAKSTACKTOPTOP-1][BREAKSTACKTOP[BREAKSTACKTOPTOP-1]].length+=cscs.length;
 			break;
 			case 8://不回退 
-				let_decl_stmt();
+				struct instruction cscs=let_decl_stmt();//非break行为
+				blbl=instrcat(blbl,cscs);
+				BREAKSTACK[BREAKSTACKTOPTOP-1][BREAKSTACKTOP[BREAKSTACKTOPTOP-1]].count+=cscs.count;
+				BREAKSTACK[BREAKSTACKTOPTOP-1][BREAKSTACKTOP[BREAKSTACKTOPTOP-1]].length+=cscs.length;
 			break;
 			case 7://不回退 
-				if_stmt();
+				struct instruction cscs=if_stmt();//break行为。内部已经同步更新，无需再加，只拼接即可 
+				blbl=instrcat(blbl,cscs);
 			break;
 			case 10://不回退 
-				while_stmt();
+				struct instruction cscs=while_stmt();//新循环，更新的是新层，需要加 
+				blbl=instrcat(blbl,cscs);
+				BREAKSTACK[BREAKSTACKTOPTOP-1][BREAKSTACKTOP[BREAKSTACKTOPTOP-1]].count+=cscs.count;
+				BREAKSTACK[BREAKSTACKTOPTOP-1][BREAKSTACKTOP[BREAKSTACKTOPTOP-1]].length+=cscs.length;
 			break;
 			case 29://什么都不做 
 			break;
@@ -2194,18 +2209,19 @@ struct instruction block_stmt()
 				{
 					exit(-1);
 				}
-				flfl=0x41;//br
-				bobo.list[bobo.length]=flfl;
-				bobo.count++;//当前指令条数。每加进来一个指令块，都要计算新的指令偏移变成了多少 
-				bobo.length++;
-				phph=0;//先填个0 
-				BREAKSTACK[BREAKSTACKTOPTOP-1][BREAKSTACKTOP[BREAKSTACKTOPTOP-1]].count=bobo.count;//已经是++后了 
-				BREAKSTACK[BREAKSTACKTOPTOP-1][BREAKSTACKTOP[BREAKSTACKTOPTOP-1]].length=bobo.length;//要填在这个位置 
+				int flfl=0x41;//br
+				blbl.list[blbl.length]=flfl;
+				blbl.count++;//当前指令条数。每加进来一个指令块，都要计算新的指令偏移变成了多少 
+				blbl.length++;
+				BREAKSTACK[BREAKSTACKTOPTOP-1][BREAKSTACKTOP[BREAKSTACKTOPTOP-1]].count++;//已经是++后了 
+				BREAKSTACK[BREAKSTACKTOPTOP-1][BREAKSTACKTOP[BREAKSTACKTOPTOP-1]].length++;//要填在这个位置 
 				BREAKSTACKTOP[BREAKSTACKTOPTOP-1]++;//存了一个 
-				storeint(phph,bobo.list,bobo.length);
-				bobo.length+=4;//一个32位占4个char 
-				BREAKSTACK[BREAKSTACKTOPTOP-1][BREAKSTACKTOP[BREAKSTACKTOPTOP-1]].count=bobo.count;
-				BREAKSTACK[BREAKSTACKTOPTOP-1][BREAKSTACKTOP[BREAKSTACKTOPTOP-1]].length=bobo.length;
+				BREAKSTACK[BREAKSTACKTOPTOP-1][BREAKSTACKTOP[BREAKSTACKTOPTOP-1]].count=BREAKSTACK[BREAKSTACKTOPTOP-1][BREAKSTACKTOP[BREAKSTACKTOPTOP-1]-1].count;//存完之后要继承位置 
+				BREAKSTACK[BREAKSTACKTOPTOP-1][BREAKSTACKTOP[BREAKSTACKTOPTOP-1]].length=BREAKSTACK[BREAKSTACKTOPTOP-1][BREAKSTACKTOP[BREAKSTACKTOPTOP-1]-1].length;//存完之后要继承位置 
+				int phph=0;//先填个0 
+				storeint(phph,blbl.list,blbl.length);
+				blbl.length+=4;//一个32位占4个char 
+				BREAKSTACK[BREAKSTACKTOPTOP-1][BREAKSTACKTOP[BREAKSTACKTOPTOP-1]].length+=4;
 			break;
 			case 4://continue
 				next=nextToken();//分号
@@ -2217,15 +2233,16 @@ struct instruction block_stmt()
 				{
 					exit(-1);
 				}
-				flfl=0x41;//br
-				bobo.list[bobo.length]=flfl;
-				bobo.count++;//当前指令条数。每加进来一个指令块，都要计算新的指令偏移变成了多少 
-				bobo.length++;
-				phph=-bobo.count;//这里还勉强可以这么做。到了其他块里面必须同步 
-				storeint(phph,bobo.list,bobo.length);
-				bobo.length+=4;//一个32位占4个char 
-				BREAKSTACK[BREAKSTACKTOPTOP-1][BREAKSTACKTOP[BREAKSTACKTOPTOP-1]].count=bobo.count;
-				BREAKSTACK[BREAKSTACKTOPTOP-1][BREAKSTACKTOP[BREAKSTACKTOPTOP-1]].length=bobo.length;
+				int flfl=0x41;//br
+				blbl.list[blbl.length]=flfl;
+				blbl.count++;//当前指令条数。每加进来一个指令块，都要计算新的指令偏移变成了多少 
+				blbl.length++;
+				BREAKSTACK[BREAKSTACKTOPTOP-1][BREAKSTACKTOP[BREAKSTACKTOPTOP-1]].count++;//已经是++后了 
+				BREAKSTACK[BREAKSTACKTOPTOP-1][BREAKSTACKTOP[BREAKSTACKTOPTOP-1]].length++;//要填在这个位置 
+				int phph=-BREAKSTACK[BREAKSTACKTOPTOP-1][BREAKSTACKTOP[BREAKSTACKTOPTOP-1]].count;//跳到老早之前 
+				storeint(phph,blbl.list,blbl.length);
+				blbl.length+=4;//一个32位占4个char 
+				BREAKSTACK[BREAKSTACKTOPTOP-1][BREAKSTACKTOP[BREAKSTACKTOPTOP-1]].length+=4;
 			break;
 			case 9://return
 				next=nextToken();//分号或expr 
@@ -2238,30 +2255,52 @@ struct instruction block_stmt()
 						exit(-1);
 					}
 				}
+				char rtrt=0x49;//ret
+				blbl.list[blbl.length]=rtrt;
+				blbl.count++;//当前指令条数。每加进来一个指令块，都要计算新的指令偏移变成了多少 
+				blbl.length++;
+				BREAKSTACK[BREAKSTACKTOPTOP-1][BREAKSTACKTOP[BREAKSTACKTOPTOP-1]].count++;
+				BREAKSTACK[BREAKSTACKTOPTOP-1][BREAKSTACKTOP[BREAKSTACKTOPTOP-1]].length++;
 			break;
 			case 25://block_stmt，回退 
 				unreadToken();
-				block_stmt(); 
+				struct instruction cscs=block_stmt();//break行为。内部已经同步更新，无需再加，只拼接即可 
+				blbl=instrcat(blbl,cscs);//拼接 
 			break;
 			case 23:
 				unreadToken();
-				expr_stmt(); 
+				struct instruction cscs=expr_stmt(); 
+				blbl=instrcat(blbl,cscs);//拼接 
+				BREAKSTACK[BREAKSTACKTOPTOP-1][BREAKSTACKTOP[BREAKSTACKTOPTOP-1]].count+=cscs.count;
+				BREAKSTACK[BREAKSTACKTOPTOP-1][BREAKSTACKTOP[BREAKSTACKTOPTOP-1]].length+=cscs.length;
 			break;
 			case 31:
 				unreadToken();
-				expr_stmt(); 
+				struct instruction cscs=expr_stmt(); 
+				blbl=instrcat(blbl,cscs);//拼接 
+				BREAKSTACK[BREAKSTACKTOPTOP-1][BREAKSTACKTOP[BREAKSTACKTOPTOP-1]].count+=cscs.count;
+				BREAKSTACK[BREAKSTACKTOPTOP-1][BREAKSTACKTOP[BREAKSTACKTOPTOP-1]].length+=cscs.length;
 			break;
 			case 41:
 				unreadToken();
-				expr_stmt(); 
+				struct instruction cscs=expr_stmt(); 
+				blbl=instrcat(blbl,cscs);//拼接 
+				BREAKSTACK[BREAKSTACKTOPTOP-1][BREAKSTACKTOP[BREAKSTACKTOPTOP-1]].count+=cscs.count;
+				BREAKSTACK[BREAKSTACKTOPTOP-1][BREAKSTACKTOP[BREAKSTACKTOPTOP-1]].length+=cscs.length;
 			break;
 			case 42:
 				unreadToken();
-				expr_stmt(); 
+				struct instruction cscs=expr_stmt(); 
+				blbl=instrcat(blbl,cscs);//拼接 
+				BREAKSTACK[BREAKSTACKTOPTOP-1][BREAKSTACKTOP[BREAKSTACKTOPTOP-1]].count+=cscs.count;
+				BREAKSTACK[BREAKSTACKTOPTOP-1][BREAKSTACKTOP[BREAKSTACKTOPTOP-1]].length+=cscs.length;
 			break;
 			case 51:
 				unreadToken();
-				expr_stmt(); 
+				struct instruction cscs=expr_stmt(); 
+				blbl=instrcat(blbl,cscs);//拼接 
+				BREAKSTACK[BREAKSTACKTOPTOP-1][BREAKSTACKTOP[BREAKSTACKTOPTOP-1]].count+=cscs.count;
+				BREAKSTACK[BREAKSTACKTOPTOP-1][BREAKSTACKTOP[BREAKSTACKTOPTOP-1]].length+=cscs.length;
 			break;
 			default:
 				exit(-1);
@@ -2269,6 +2308,23 @@ struct instruction block_stmt()
 		}
 		next=nextToken();
 	}
+	fafa=FUNCLIST[FUNCLISTTOP].localstacktop;//局部变量栈出栈层设置
+	if(fafa>0)//栈非空 
+	{
+		for(fafa=FUNCLIST[FUNCLISTTOP].localstacktop-1;fafa>=0;fafa--)
+		{
+			if(FUNCLIST[FUNCLISTTOP].localstack[fafa].istop!=0)
+			{
+				break;
+			}
+		}
+		if(fafa>=0)//这位置是前一个栈顶 
+		{
+			FUNCLIST[FUNCLISTTOP].localstack[fafa].istop--;
+		}
+		FUNCLIST[FUNCLISTTOP].localstacktop==fafa+1;//否则fafa是-1，这个式子也没错 
+	}
+	return blbl;//返回 
 }
 
 //if语句，以if（7）开头，调用bool表达式。开头被预读 
@@ -2295,11 +2351,6 @@ void if_stmt()
 		}
 	}
 	unreadToken();//末尾一定回退 
-}
-
-void stmt()
-{
-	
 }
 
 //function_param -> 'const'? IDENT ':' ty
