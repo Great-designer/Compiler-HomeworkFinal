@@ -2803,16 +2803,16 @@ int main(int argc,char *argv[])
 		}
 		else if(FUNCLIST[i].type==1)//型
 		{
-			int ttt=8;
+			int ttt=1;
 			outint(ttt);
 		}
 		else if(FUNCLIST[i].type==2)//型
 		{
-			int ttt=8;
+			int ttt=1;
 			outint(ttt);
 		}
-		outint(8*FUNCLIST[i].paramcount);//参
-		outint(8*FUNCLIST[i].localtabletop);//局
+		outint(FUNCLIST[i].paramcount);//参
+		outint(FUNCLIST[i].localtabletop);//局
 		outint(FUNCLIST[i].instr.count);//指令数
 		fwrite(FUNCLIST[i].instr.list,sizeof(char),FUNCLIST[i].instr.length,OUT);
 	}
