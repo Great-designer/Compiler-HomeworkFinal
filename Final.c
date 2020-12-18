@@ -1982,6 +1982,7 @@ struct instruction while_stmt()
 	}
 	struct instruction cscs; 
 	char rtrt;
+	int etet;
 	next=nextToken();
 	while(next!=26)//右大括号 
 	{
@@ -2066,6 +2067,22 @@ struct instruction while_stmt()
 					bobo=instrcat(bobo,exex.instr);
 					BREAKSTACK[BREAKSTACKTOPTOP-1][BREAKSTACKTOP[BREAKSTACKTOPTOP-1]].count+=exex.instr.count;
 					BREAKSTACK[BREAKSTACKTOPTOP-1][BREAKSTACKTOP[BREAKSTACKTOPTOP-1]].length+=exex.instr.length;
+					rtrt=0x0b;//argc0
+					bobo.list[bobo.length]=rtrt;
+					bobo.count++;
+					bobo.length++;
+					BREAKSTACK[BREAKSTACKTOPTOP-1][BREAKSTACKTOP[BREAKSTACKTOPTOP-1]].count++;
+					BREAKSTACK[BREAKSTACKTOPTOP-1][BREAKSTACKTOP[BREAKSTACKTOPTOP-1]].length++;
+					etet=0;
+					storeint(etet,bobo.list,bobo.length);
+					bobo.length+=4;//int为4 
+					BREAKSTACK[BREAKSTACKTOPTOP-1][BREAKSTACKTOP[BREAKSTACKTOPTOP-1]].length+=4;
+					rtrt=0x17;//store
+					bobo.list[bobo.length]=rtrt;
+					bobo.count++;
+					bobo.length++;
+					BREAKSTACK[BREAKSTACKTOPTOP-1][BREAKSTACKTOP[BREAKSTACKTOPTOP-1]].count++;
+					BREAKSTACK[BREAKSTACKTOPTOP-1][BREAKSTACKTOP[BREAKSTACKTOPTOP-1]].length++;
 				}
 				else
 				{
@@ -2192,6 +2209,7 @@ struct instruction block_stmt()
 	int phph;
 	int flfl;
 	char rtrt;
+	int etet;
 	next=nextToken();//未加指令，不必改动while栈顶 
 	while(next!=26)//右大括号 
 	{
@@ -2284,6 +2302,22 @@ struct instruction block_stmt()
 					blbl=instrcat(blbl,exex.instr);
 					BREAKSTACK[BREAKSTACKTOPTOP-1][BREAKSTACKTOP[BREAKSTACKTOPTOP-1]].count+=exex.instr.count;
 					BREAKSTACK[BREAKSTACKTOPTOP-1][BREAKSTACKTOP[BREAKSTACKTOPTOP-1]].length+=exex.instr.length;
+					rtrt=0x0b;//argc0
+					blbl.list[blbl.length]=rtrt;
+					blbl.count++;
+					blbl.length++;
+					BREAKSTACK[BREAKSTACKTOPTOP-1][BREAKSTACKTOP[BREAKSTACKTOPTOP-1]].count++;
+					BREAKSTACK[BREAKSTACKTOPTOP-1][BREAKSTACKTOP[BREAKSTACKTOPTOP-1]].length++;
+					etet=0;
+					storeint(etet,blbl.list,blbl.length);
+					blbl.length+=4;//int为4 
+					BREAKSTACK[BREAKSTACKTOPTOP-1][BREAKSTACKTOP[BREAKSTACKTOPTOP-1]].length+=4;
+					rtrt=0x17;//store
+					blbl.list[blbl.length]=rtrt;
+					blbl.count++;
+					blbl.length++;
+					BREAKSTACK[BREAKSTACKTOPTOP-1][BREAKSTACKTOP[BREAKSTACKTOPTOP-1]].count++;
+					BREAKSTACK[BREAKSTACKTOPTOP-1][BREAKSTACKTOP[BREAKSTACKTOPTOP-1]].length++;
 				}
 				else
 				{
