@@ -2690,6 +2690,28 @@ void lastcheck()//设置入口点。假设之前编译部分全做完了
 	FUNCLIST[FUNCLISTTOP].instr.list[2]=(char)((temp>>16) & 0x000000ff);
 	FUNCLIST[FUNCLISTTOP].instr.list[3]=(char)((temp>> 8) & 0x000000ff);
 	FUNCLIST[FUNCLISTTOP].instr.list[4]=(char)((temp>> 0) & 0x000000ff);
+	struct instruction efef;
+	memset(&efef,0,sizeof(struct instruction));//清空
+	int pkpk;
+	for(pkpk=0;pkpk<TABLETOP;pkpk++)//要初始化全局变量，在函数指令序列开头 
+	{
+		if(TABLE[TABLETOP].valid==0||TABLE[TABLETOP].type==0)//没初始化或者是字符串 
+		{
+			continue; 
+		}
+		char ymym=0x0c;//加载局部指令 
+		efef.list[efef.length]=ymym;
+		efef.count++;
+		efef.length++;//光标先移动
+		storeint(pkpk,efef.list,efef.length);//局部变量编号 
+		efef.length+=4;//一个32位占4个char 
+		efef=instrcat(efef,TABLE[TABLETOP].instr);
+		ymym=0x17;//store
+		efef.list[efef.length]=ymym;
+		efef.count++;
+		efef.length++;
+	}
+	FUNCLIST[FUNCLISTTOP].instr=instrcat(efef,FUNCLIST[FUNCLISTTOP].instr);//初始化部分接到前面 
 	FUNCLISTTOP++; 
 }
 
