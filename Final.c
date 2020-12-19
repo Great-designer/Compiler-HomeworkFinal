@@ -1144,10 +1144,12 @@ struct expression parse_primary()//½âÎöÒ»Ôª±í´ïÊ½¡£ÕâÀï´¦Àí×óÀ¨ºÅ¡¢º¯Êıµ÷ÓÃ¡¢Ç°Ö
 					exit(-1);
 				}
 				long long lololo=TABLETOP;//¼Ç×¡Ìîµ½ÄÄÒ»¸ñÁË 
+				memset(&TABLE[TABLETOP],0,sizeof(struct symboltable));
 				strcpy(TABLE[TABLETOP].name,TOKEN);
 				TABLE[TABLETOP].isconst=1;//×Ö·û´®¶¼ÊÇ³£Á¿ 
 				TABLE[TABLETOP].type=0;//void
-				TABLE[TABLETOP].valid=1;//ÒÑ³õÊ¼»¯ 
+				TABLE[TABLETOP].valid=1;//ÓĞĞ§
+				TABLETOP++; 
 				riri=nextToken();//ÓÒÀ¨ºÅ
 				if(riri!=24)
 				{
