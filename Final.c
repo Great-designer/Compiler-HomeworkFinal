@@ -1724,7 +1724,7 @@ int is_binary_op(int peek)
 
 struct expression parse_opg(struct expression lhs,int cerp)//lhs是左部，prec是左部优先级。每次调用这个的时候，下一个总应该是运算符。as应该在这里特判 
 {
-	int peek=nextToken();//预读下一个运算符，prec是优先级
+	int peek=nextToken();//运算符2，prec是优先级
 	while(peek==1)//是个as
 	{
 		if(lhs.type!=1&&lhs.type!=2)
@@ -1756,8 +1756,8 @@ struct expression parse_opg(struct expression lhs,int cerp)//lhs是左部，prec是左
 	while(is_binary_op(peek)&&prec(peek)>=cerp)//peek是二元运算符，peek优先级大于等于左部旧优先级就要规约 
 	{
 		int op=peek;
-		struct expression rhs=parse_primary();//右部读一个并解析某个东西
-		peek=nextToken();//再预读下一个运算符。比较两个运算符的优先级 
+		struct expression rhs=parse_primary();//右部读一个并解析某个东西3
+		peek=nextToken();//再预读下一个运算符4。比较2和4两个运算符的优先级 
 		while(peek==1)//是个as
 		{
 			if(rhs.type!=1&&rhs.type!=2)
@@ -1788,7 +1788,8 @@ struct expression parse_opg(struct expression lhs,int cerp)//lhs是左部，prec是左
 		}
 		while(is_binary_op(peek)&&prec(peek)>prec(op))//peek是二元运算符且peek优先级大于op优先级。因为赋值只能出现一次，且优先级最低，故无需考虑右结合 
 		{
-			rhs=parse_opg(rhs,prec(peek));//先做右边 
+			unreadToken();//这里必须退回运算符4
+			rhs=parse_opg(rhs,prec(peek));//做右边 
 			peek=nextToken();
 			while(peek==1)//是个as
 			{
