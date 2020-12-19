@@ -1290,7 +1290,7 @@ struct expression parse_primary()//½âÎöÒ»Ôª±í´ïÊ½¡£ÕâÀï´¦Àí×óÀ¨ºÅ¡¢º¯Êıµ÷ÓÃ¡¢Ç°Ö
 				}
 				else
 				{
-					if(TABLE[finding].type==0||TABLE[finding].valid==0)//ÏÈ¼ì²é±äÁ¿ÀàĞÍ£¬ÒÔ¼°ÊÇ·ñÓĞĞ§ 
+					if(TABLE[finding].type==0)//ÏÈ¼ì²é±äÁ¿ÀàĞÍ
 					{
 						exit(-1);
 					}
@@ -1323,7 +1323,7 @@ struct expression parse_primary()//½âÎöÒ»Ôª±í´ïÊ½¡£ÕâÀï´¦Àí×óÀ¨ºÅ¡¢º¯Êıµ÷ÓÃ¡¢Ç°Ö
 						}
 						else//ÔÚÈ«¾Ö±í 
 						{
-							if(TABLE[finding].type==0||TABLE[finding].valid==0)//ÏÈ¼ì²é±äÁ¿ÀàĞÍ£¬ÒÔ¼°ÊÇ·ñÓĞĞ§ 
+							if(TABLE[finding].type==0)//ÏÈ¼ì²é±äÁ¿ÀàĞÍ
 							{
 								exit(-1);
 							}
@@ -1343,7 +1343,7 @@ struct expression parse_primary()//½âÎöÒ»Ôª±í´ïÊ½¡£ÕâÀï´¦Àí×óÀ¨ºÅ¡¢º¯Êıµ÷ÓÃ¡¢Ç°Ö
 					}
 					else//ÔÚ²ÎÁ¿±í
 					{
-						if(FUNCLIST[FUNCLISTTOP].param[finding].type==0||FUNCLIST[FUNCLISTTOP].param[finding].valid==0)//ÏÈ¼ì²é±äÁ¿ÀàĞÍ£¬ÒÔ¼°ÊÇ·ñÓĞĞ§ 
+						if(FUNCLIST[FUNCLISTTOP].param[finding].type==0)
 						{
 							exit(-1);
 						}
@@ -1363,7 +1363,7 @@ struct expression parse_primary()//½âÎöÒ»Ôª±í´ïÊ½¡£ÕâÀï´¦Àí×óÀ¨ºÅ¡¢º¯Êıµ÷ÓÃ¡¢Ç°Ö
 				}
 				else//ÔÚ¾Ö²¿±í
 				{
-					if(FUNCLIST[FUNCLISTTOP].localtable[finding].type==0||FUNCLIST[FUNCLISTTOP].localtable[finding].valid==0)//ÏÈ¼ì²é±äÁ¿ÀàĞÍ£¬ÒÔ¼°ÊÇ·ñÓĞĞ§ 
+					if(FUNCLIST[FUNCLISTTOP].localtable[finding].type==0)//ÏÈ¼ì²é±äÁ¿ÀàĞÍ
 					{
 						exit(-1);
 					}
@@ -1392,6 +1392,11 @@ struct expression parse_primary()//½âÎöÒ»Ôª±í´ïÊ½¡£ÕâÀï´¦Àí×óÀ¨ºÅ¡¢º¯Êıµ÷ÓÃ¡¢Ç°Ö
 		exit(-1);//ÓĞÎÊÌâ 
 	}
 }
+
+// ÔìÒ»Ìõ£º±È½ÏÔËËã·ûµÄÔËĞĞ½á¹ûÊÇ²¼¶ûÀàĞÍ£¬Ö»ÄÜ³öÏÖÔÚ if ºÍ while Óï¾äµÄÌõ¼ş±í´ïÊ½ÖĞ¡£ÔËËã·ûµÄÁ½²à±ØĞëÊÇÏàÍ¬ÀàĞÍµÄÊı¾İ
+// µ«ÊÇwhileºÍifÀï²»Ö¹¿ÉÒÔ³öÏÖÕâ¸ö¡£Ïàµ±ÓÚÓÅÏÈ¼¶×îµÍ£¬Ë³Ğò×óµ½ÓÒ 
+// bool_expr -> expr '==' | '!=' | '<' | '>' | '<=' | '>=' expr
+//±È½ÏµÄ±í´ïÊ½£¬Ö±½ÓÖ¸Áî¼´¿É 
 
 struct expression combine(struct expression lhs,int op,struct expression rhs)//combine½«Èı²¿·Ö×éºÏ¡£ÕâÀï´¦ÀíÓïÒå 
 {
@@ -1495,6 +1500,182 @@ struct expression combine(struct expression lhs,int op,struct expression rhs)//c
 		temp.instr.length++;
 		return temp;
 	}
+	else if(op==30)//²»µÈÓÚ¡£Õ»¶¥ÊÇ1»ò-1ÔòÎª1£¬·ñÔòÎª0¡£Ìø×ªÓÃÊÇ0ºÍ·Ç0£¬¹Ê²»ÓÃ¹Ü 
+	{
+		char nene;//±È½ÏÖ¸Áî¡£½áÊøÊ±½á¹û´¢´æÔÚÕ»¶¥£¬ÏÈ×óĞ¡ÓÚºóÓÒÊÇ-1 
+		if(lhs.type==1)
+		{
+			nene=0x30;
+		}
+		else if(lhs.type==2)
+		{
+			nene=0x32;
+		}
+		else
+		{
+			exit(-1);
+		} 
+		struct expression temp;
+		memset(&temp,0,sizeof(struct instruction));//ÇåÁã 
+		temp.instr=instrcat(lhs.instr,rhs.instr);//Ö¸Áî²¿·ÖÖ±½ÓÆ´½Ó½øÀ´ 
+		temp.instr.list[temp.instr.length]=nene;
+		temp.instr.count++;
+		temp.instr.length++;
+		return temp;
+	}
+	else if(op==34)//Ğ¡ÓÚ¡£Õ»¶¥ÊÇ-1ÔòÎª1£¬·ñÔòÎª0¡£¼´½öĞ¡ÓÚ0µÄÊ±ºòÎª1 
+	{
+		char nene;//±È½ÏÖ¸Áî¡£½áÊøÊ±½á¹û´¢´æÔÚÕ»¶¥£¬ÏÈ×óĞ¡ÓÚºóÓÒÊÇ-1 
+		if(lhs.type==1)
+		{
+			nene=0x30;
+		}
+		else if(lhs.type==2)
+		{
+			nene=0x32;
+		}
+		else
+		{
+			exit(-1);
+		} 
+		struct expression temp;
+		memset(&temp,0,sizeof(struct instruction));//ÇåÁã 
+		temp.instr=instrcat(lhs.instr,rhs.instr);//Ö¸Áî²¿·ÖÖ±½ÓÆ´½Ó½øÀ´ 
+		temp.instr.list[temp.instr.length]=nene;
+		temp.instr.count++;
+		temp.instr.length++;
+		nene=0x39;
+		temp.instr.list[temp.instr.length]=nene;
+		temp.instr.count++;
+		temp.instr.length++;
+		return temp;
+	}
+	else if(op==35)//´óÓÚ¡£Õ»¶¥ÊÇ1ÔòÎª1£¬·ñÔòÎª0¡£¼´½ö´óÓÚ0µÄÊ±ºòÎª1 
+	{
+		char nene;//±È½ÏÖ¸Áî¡£½áÊøÊ±½á¹û´¢´æÔÚÕ»¶¥£¬ÏÈ×óĞ¡ÓÚºóÓÒÊÇ-1 
+		if(lhs.type==1)
+		{
+			nene=0x30;
+		}
+		else if(lhs.type==2)
+		{
+			nene=0x32;
+		}
+		else
+		{
+			exit(-1);
+		} 
+		struct expression temp;
+		memset(&temp,0,sizeof(struct instruction));//ÇåÁã 
+		temp.instr=instrcat(lhs.instr,rhs.instr);//Ö¸Áî²¿·ÖÖ±½ÓÆ´½Ó½øÀ´ 
+		temp.instr.list[temp.instr.length]=nene;
+		temp.instr.count++;
+		temp.instr.length++;
+		nene=0x3a;
+		temp.instr.list[temp.instr.length]=nene;
+		temp.instr.count++;
+		temp.instr.length++;
+		return temp;
+	}
+	else if(op==37)//µÈÓÚ¡£Õ»¶¥ÊÇ0ÔòÎª1£¬·ñÔòÎª0 
+	{
+		char nene;//±È½ÏÖ¸Áî¡£½áÊøÊ±½á¹û´¢´æÔÚÕ»¶¥£¬ÏÈ×óĞ¡ÓÚºóÓÒÊÇ-1 
+		if(lhs.type==1)
+		{
+			nene=0x30;
+		}
+		else if(lhs.type==2)
+		{
+			nene=0x32;
+		}
+		else
+		{
+			exit(-1);
+		} 
+		struct expression temp;
+		memset(&temp,0,sizeof(struct instruction));//ÇåÁã 
+		temp.instr=instrcat(lhs.instr,rhs.instr);//Ö¸Áî²¿·ÖÖ±½ÓÆ´½Ó½øÀ´ 
+		temp.instr.list[temp.instr.length]=nene;
+		temp.instr.count++;
+		temp.instr.length++;
+		nene=0x2e;//ÏÈÈ¡·´£¬Ä©Î»¹Ì¶¨ 
+		temp.instr.list[temp.instr.length]=nene;
+		temp.instr.count++;
+		temp.instr.length++;
+		nene=0x01;//ÔÙpushÒ»¸ö1½øÈ¥ 
+		temp.instr.list[temp.instr.length]=nene;
+		temp.instr.count++;
+		temp.instr.length++;//¹â±êÏÈÒÆ¶¯²ÅÄÜ·Ålong 
+		long long phph=1; 
+		storelong(&phph,temp.instr.list,temp.instr.length);
+		temp.instr.length+=8;//Ò»¸ö64Î»Õ¼8¸öchar 
+		nene=0x2b;//×îºó°´Î»Óë 
+		temp.instr.list[temp.instr.length]=nene;
+		temp.instr.count++;
+		temp.instr.length++;
+		return temp;
+	}
+	else if(op==38)//Ğ¡ÓÚµÈÓÚ¡£Õ»¶¥ÊÇ0»ò-1ÔòÎª1£¬·ñÔòÎª0 
+	{
+		char nene;//±È½ÏÖ¸Áî¡£½áÊøÊ±½á¹û´¢´æÔÚÕ»¶¥£¬ÏÈ×óĞ¡ÓÚºóÓÒÊÇ-1 
+		if(lhs.type==1)
+		{
+			nene=0x30;
+		}
+		else if(lhs.type==2)
+		{
+			nene=0x32;
+		}
+		else
+		{
+			exit(-1);
+		} 
+		struct expression temp;
+		memset(&temp,0,sizeof(struct instruction));//ÇåÁã 
+		temp.instr=instrcat(lhs.instr,rhs.instr);//Ö¸Áî²¿·ÖÖ±½ÓÆ´½Ó½øÀ´ 
+		temp.instr.list[temp.instr.length]=nene;
+		temp.instr.count++;
+		temp.instr.length++;
+		nene=0x01;//pushÒ»¸ö1½øÈ¥ 
+		temp.instr.list[temp.instr.length]=nene;
+		temp.instr.count++;
+		temp.instr.length++;//¹â±êÏÈÒÆ¶¯²ÅÄÜ·Ålong 
+		long long phph=1; 
+		storelong(&phph,temp.instr.list,temp.instr.length);
+		temp.instr.length+=8;//Ò»¸ö64Î»Õ¼8¸öchar 
+		nene=0x2d;//È»ºó°´Î»Òì»ò 
+		temp.instr.list[temp.instr.length]=nene;
+		temp.instr.count++;
+		temp.instr.length++;
+		return temp;
+	}
+	else if(op==39)//´óÓÚµÈÓÚ¡£Õ»¶¥ÊÇ0»ò1ÔòÎª1£¬·ñÔòÎª0 
+	{
+		char nene;//±È½ÏÖ¸Áî¡£½áÊøÊ±½á¹û´¢´æÔÚÕ»¶¥£¬ÏÈ×óĞ¡ÓÚºóÓÒÊÇ-1 
+		if(lhs.type==1)
+		{
+			nene=0x30;
+		}
+		else if(lhs.type==2)
+		{
+			nene=0x32;
+		}
+		else
+		{
+			exit(-1);
+		} 
+		struct expression temp;
+		memset(&temp,0,sizeof(struct instruction));//ÇåÁã 
+		temp.instr=instrcat(lhs.instr,rhs.instr);//Ö¸Áî²¿·ÖÖ±½ÓÆ´½Ó½øÀ´ 
+		temp.instr.list[temp.instr.length]=nene;
+		temp.instr.count++;
+		temp.instr.length++;
+		nene=0x2e;//Ö±½ÓÈ¡·´ 
+		temp.instr.list[temp.instr.length]=nene;
+		temp.instr.count++;
+		temp.instr.length++;
+		return temp;
+	}
 	else
 	{
 		exit(-1);//ÓĞÎÊÌâ 
@@ -1531,7 +1712,7 @@ int prec(int op)//²éÕÒÔËËã·ûÓÅÏÈ¼¶
 
 int is_binary_op(int peek)
 {
-	if(peek==22||peek==32||peek==21||peek==31)//Ã»ÓĞÀ¨ºÅ¡¢¸³ÖµºÍas
+	if(peek==22||peek==32||peek==21||peek==31||peek==30||peek==34||peek==35||peek==37||peek==38||peek==39)//Ã»ÓĞÀ¨ºÅ¡¢¸³ÖµºÍas£¬ÓĞ±È½Ï 
 	{
 		return 1; 
 	}
@@ -1650,118 +1831,6 @@ struct expression expr()//½âÎö±í´ïÊ½
 	return parse_opg(lhs,0);//0±íÊ¾ÕâÊÇ·ÇÖÕ½á·û 
 }
  
-// ÔìÒ»Ìõ£º±È½ÏÔËËã·ûµÄÔËĞĞ½á¹ûÊÇ²¼¶ûÀàĞÍ£¬Ö»ÄÜ³öÏÖÔÚ if ºÍ while Óï¾äµÄÌõ¼ş±í´ïÊ½ÖĞ¡£ÔËËã·ûµÄÁ½²à±ØĞëÊÇÏàÍ¬ÀàĞÍµÄÊı¾İ
-// µ«ÊÇwhileºÍifÀï²»Ö¹¿ÉÒÔ³öÏÖÕâ¸ö¡£Ïàµ±ÓÚÓÅÏÈ¼¶×îµÍ£¬Ë³Ğò×óµ½ÓÒ 
-// bool_expr -> expr '==' | '!=' | '<' | '>' | '<=' | '>=' expr
-struct instruction bool_expr()//±È½ÏµÄ±í´ïÊ½£¬Ö±½ÓÖ¸Áî¼´¿É 
-{
-	struct expression lhs=expr();
-	if(lhs.type==0)
-	{
-		exit(-1);
-	}
-	int next=nextToken();
-	if(next==30||next==34||next==35||next==37||next==38||next==39)
-	{
-		struct expression rhs=expr();
-		if(lhs.type!=rhs.type||rhs.type==0)//ÏÈ¼ì²é×óÓÒÁ½±ßtypeÊÇ·ñÒ»ÖÂ»òÊÇ·ñÎª0 
-		{
-			exit(-1);//ÓĞÎÊÌâ 
-		}
-		char nene;//±È½ÏÖ¸Áî¡£½áÊøÊ±½á¹û´¢´æÔÚÕ»¶¥£¬ÏÈ×óĞ¡ÓÚºóÓÒÊÇ-1 
-		if(lhs.type==1)
-		{
-			nene=0x30;
-		}
-		else if(lhs.type==2)
-		{
-			nene=0x32;
-		}
-		else
-		{
-			exit(-1);
-		} 
-		struct instruction temp;
-		memset(&temp,0,sizeof(struct instruction));//ÇåÁã 
-		temp=instrcat(lhs.instr,rhs.instr);//Ö¸Áî²¿·ÖÖ±½ÓÆ´½Ó½øÀ´ 
-		temp.list[temp.length]=nene;
-		temp.count++;
-		temp.length++;
-		if(next==30)//²»µÈÓÚ¡£Õ»¶¥ÊÇ1»ò-1ÔòÎª1£¬·ñÔòÎª0¡£Ìø×ªÓÃÊÇ0ºÍ·Ç0£¬¹Ê²»ÓÃ¹Ü 
-		{
-			return temp;
-		}
-		else if(next==34)//Ğ¡ÓÚ¡£Õ»¶¥ÊÇ-1ÔòÎª1£¬·ñÔòÎª0¡£¼´½öĞ¡ÓÚ0µÄÊ±ºòÎª1 
-		{
-			nene=0x39;
-			temp.list[temp.length]=nene;
-			temp.count++;
-			temp.length++;
-			return temp;
-		}
-		else if(next==35)//´óÓÚ¡£Õ»¶¥ÊÇ1ÔòÎª1£¬·ñÔòÎª0¡£¼´½ö´óÓÚ0µÄÊ±ºòÎª1 
-		{
-			nene=0x3a;
-			temp.list[temp.length]=nene;
-			temp.count++;
-			temp.length++;
-			return temp;
-		}
-		else if(next==37)//µÈÓÚ¡£Õ»¶¥ÊÇ0ÔòÎª1£¬·ñÔòÎª0 
-		{
-			nene=0x2e;//ÏÈÈ¡·´£¬Ä©Î»¹Ì¶¨ 
-			temp.list[temp.length]=nene;
-			temp.count++;
-			temp.length++;
-			nene=0x01;//ÔÙpushÒ»¸ö1½øÈ¥ 
-			temp.list[temp.length]=nene;
-			temp.count++;
-			temp.length++;//¹â±êÏÈÒÆ¶¯²ÅÄÜ·Ålong 
-			long long phph=1; 
-			storelong(&phph,temp.list,temp.length);
-			temp.length+=8;//Ò»¸ö64Î»Õ¼8¸öchar 
-			nene=0x2b;//×îºó°´Î»Óë 
-			temp.list[temp.length]=nene;
-			temp.count++;
-			temp.length++;
-			return temp;
-		}
-		else if(next==38)//Ğ¡ÓÚµÈÓÚ¡£Õ»¶¥ÊÇ0»ò-1ÔòÎª1£¬·ñÔòÎª0 
-		{
-			nene=0x01;//pushÒ»¸ö1½øÈ¥ 
-			temp.list[temp.length]=nene;
-			temp.count++;
-			temp.length++;//¹â±êÏÈÒÆ¶¯²ÅÄÜ·Ålong 
-			long long phph=1; 
-			storelong(&phph,temp.list,temp.length);
-			temp.length+=8;//Ò»¸ö64Î»Õ¼8¸öchar 
-			nene=0x2d;//È»ºó°´Î»Òì»ò 
-			temp.list[temp.length]=nene;
-			temp.count++;
-			temp.length++;
-			return temp;
-		}
-		else if(next==39)//´óÓÚµÈÓÚ¡£Õ»¶¥ÊÇ0»ò1ÔòÎª1£¬·ñÔòÎª0 
-		{
-			nene=0x2e;//Ö±½ÓÈ¡·´ 
-			temp.list[temp.length]=nene;
-			temp.count++;
-			temp.length++;
-			return temp;
-		}
-		else
-		{
-			exit(-1);
-		}
-	}
-	else//¿ÉÄÜÊÇ¾ÍÒ»¸ö±í´ïÊ½ 
-	{
-		unreadToken();//ÍË»Ø 
-		struct instruction temp=lhs.instr;
-		return temp; 
-	}
-}
-
 //±í´ïÊ½Óï¾ä£¬¿ªÍ·Îª×óĞ¡À¨ºÅ£¨23£©¡¢¼õºÅ£¨31£©¡¢±êÊ¶·û£¨51£©¡¢ÕûÊı£¨41£©ºÍ¸¡µãÊı£¨42£©£¬²»µÃÔ¤¶Á¡£
 //expr_stmt -> expr ';'
 struct instruction expr_stmt()
@@ -1995,7 +2064,7 @@ struct instruction while_stmt()
 {
 	BREAKSTACKTOPTOP++;//½øÈëÁËÒ»¸öĞÂÑ­»· 
 	BREAKSTACKTOP[BREAKSTACKTOPTOP-1]=0;//¸ÃÑ­»·Õ»¶¥³õÊ¼»¯ 
-	struct instruction bobo=bool_expr();//¾ùÒÑµ÷ÕûÎªbrfalse£¬²»Âú×ãÊ±Ìø×ª 
+	struct instruction bobo=expr().instr;//¾ùÒÑµ÷ÕûÎªbrfalse£¬²»Âú×ãÊ±Ìø×ª 
 	char flfl=0x42;//brfalse
 	bobo.list[bobo.length]=flfl;
 	bobo.count++;//µ±Ç°Ö¸ÁîÌõÊı¡£Ã¿¼Ó½øÀ´Ò»¸öÖ¸Áî¿é£¬¶¼Òª¼ÆËãĞÂµÄÖ¸ÁîÆ«ÒÆ±ä³ÉÁË¶àÉÙ 
@@ -2523,7 +2592,7 @@ struct instruction if_stmt()
 	struct br kbkb;//Ò»¸öboolÌø×ªÎ» 
 	struct br psps[16];//Ò»¸öpassÌø×ªÕ»
 	int pspstop=0; 
-	struct instruction fifi=bool_expr();//×îÖÕ·µ»ØµÄinstruction 
+	struct instruction fifi=expr().instr;//×îÖÕ·µ»ØµÄinstruction 
 	char flfl=0x42;//ÖÃÈëboolÌø×ª 
 	fifi.list[fifi.length]=flfl;
 	fifi.count++;
@@ -2558,7 +2627,7 @@ struct instruction if_stmt()
 		{
 			int boolbr=fifi.count-kbkb.count;//ÉÏÒ»¸öboolÌø×ªÓ¦¸Ãµ½Õâ¸öboolÖ®Ç° 
 			storeint(boolbr,fifi.list,kbkb.length);
-			bsbs=bool_expr();//ĞÂµÄÅĞ±ğ
+			bsbs=expr().instr;//ĞÂµÄÅĞ±ğ
 			fifi=instrcat(fifi,bsbs);
 			BREAKSTACK[BREAKSTACKTOPTOP-1][BREAKSTACKTOP[BREAKSTACKTOPTOP-1]].count+=bsbs.count;
 			BREAKSTACK[BREAKSTACKTOPTOP-1][BREAKSTACKTOP[BREAKSTACKTOPTOP-1]].length+=bsbs.length;
