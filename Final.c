@@ -698,7 +698,7 @@ struct expression//表达式结构体
 
 struct symboltable//量结构体。
 {
-	char name[64];//名字，除了纯字符串外不可重复。type为0时有效，需要写进全局初始化部分。可以strlen 
+	char name[128];//名字，除了纯字符串外不可重复。type为0时有效，需要写进全局初始化部分。可以strlen 
 	char isconst;//是常数为1，不是常数为0（输出长度为8） 
 	int valid;//未初始化为0，初始化为1 
 	int type;//1为int，2为double（都是64），0为void字符串（函数名或者字符串）。int和double的初始化都在_start中 
