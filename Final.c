@@ -2796,7 +2796,7 @@ void lastcheck()//设置入口点。假设之前编译部分全做完了
 		efef.length++;//光标先移动
 		storeint(pkpk,efef.list,efef.length);//局部变量编号 
 		efef.length+=4;//一个32位占4个char 
-		efef=instrcat(efef,TABLE[TABLETOP].instr);
+		efef=instrcat(efef,TABLE[pkpk].instr);
 		ymym=0x17;//store
 		efef.list[efef.length]=ymym;
 		efef.count++;
