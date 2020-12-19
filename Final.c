@@ -1802,6 +1802,10 @@ void const_decl_stmt()
 		exit(-1);
 	}
 	int typpp=ty();//类型 
+	if(typpp==0)//不得定义 
+	{
+		exit(-1);
+	}
 	tok=nextToken();
 	if(tok!=33)//等号 
 	{
@@ -1872,6 +1876,10 @@ void let_decl_stmt()
 		exit(-1);
 	}
 	int typpp=ty();
+	if(typpp==0)//不得定义 
+	{
+		exit(-1);
+	}
 	tok=nextToken();
 	if(tok==33)//等于部分可以选择省略
 	{
@@ -2430,7 +2438,7 @@ struct instruction block_stmt()
 		{
 			FUNCLIST[FUNCLISTTOP].localstack[fafa].istop--;
 		}
-		FUNCLIST[FUNCLISTTOP].localstacktop==fafa+1;//否则fafa是-1，这个式子也没错 
+		FUNCLIST[FUNCLISTTOP].localstacktop=fafa+1;//否则fafa是-1，这个式子也没错 
 	}
 	return blbl;//返回 
 }
@@ -2540,7 +2548,7 @@ void function()//函数，以fn（6）开头。规定开头调用前已经被读了，下一个默认是标识
 	}
 	char* iii=(char *)malloc(sizeof(char)*256);//处理标识符（51）
 	strcpy(iii,TOKEN);
-	int fff=find_now(iii,FUNCLISTTOP);
+	int fff=find_func(iii);
 	if(fff!=-1)//表里能查到 
 	{
 		exit(-1);//语义错误 
