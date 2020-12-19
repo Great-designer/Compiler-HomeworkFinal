@@ -2489,6 +2489,9 @@ struct instruction if_stmt()
 			int boolbr=fifi.count-kbkb.count;//上一个bool跳转应该到这个bool之前 
 			storeint(boolbr,fifi.list,kbkb.length);
 			bsbs=bool_expr();//新的判别
+			fifi=instrcat(fifi,bsbs);
+			BREAKSTACK[BREAKSTACKTOPTOP-1][BREAKSTACKTOP[BREAKSTACKTOPTOP-1]].count+=bsbs.count;
+			BREAKSTACK[BREAKSTACKTOPTOP-1][BREAKSTACKTOP[BREAKSTACKTOPTOP-1]].length+=bsbs.length;
 			flfl=0x42;//置入新的bool跳转 
 			fifi.list[fifi.length]=flfl;
 			fifi.count++;
