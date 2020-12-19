@@ -121,7 +121,7 @@ int getToken()//返回下一个TOKEN的类别码，注释视为Token
 							ungetc(cc,IN);//退回非数字 
 							ungetc(cc,IN);//退回符号 
 							ungetc(cc,IN);//退回e
-							DOU=atod(TOKEN);//将TOKEN中的字符串转换为浮点数 
+							DOU=atof(TOKEN);//将TOKEN中的字符串转换为浮点数 
 							symbol=42;//此时识别的单词是浮点数 
 						}
 						else//是数字，这部分有效 
@@ -136,7 +136,7 @@ int getToken()//返回下一个TOKEN的类别码，注释视为Token
 								cc=fgetc(IN);
 							}
 							ungetc(cc,IN);//退回字符 
-							DOU=atod(TOKEN);//将TOKEN中的字符串转换为浮点数 
+							DOU=atof(TOKEN);//将TOKEN中的字符串转换为浮点数 
 							symbol=42;//此时识别的单词是浮点数 
 						}
 					}
@@ -148,7 +148,7 @@ int getToken()//返回下一个TOKEN的类别码，注释视为Token
 							ungetc(cc,IN);//退回非数字 
 							ungetc(cc,IN);//退回符号 
 							ungetc(cc,IN);//退回e
-							DOU=atod(TOKEN);//将TOKEN中的字符串转换为浮点数 
+							DOU=atof(TOKEN);//将TOKEN中的字符串转换为浮点数 
 							symbol=42;//此时识别的单词是浮点数 
 						}
 						else//是数字，这部分有效 
@@ -163,7 +163,7 @@ int getToken()//返回下一个TOKEN的类别码，注释视为Token
 								cc=fgetc(IN);
 							}
 							ungetc(cc,IN);//退回字符 
-							DOU=atod(TOKEN);//将TOKEN中的字符串转换为浮点数 
+							DOU=atof(TOKEN);//将TOKEN中的字符串转换为浮点数 
 							symbol=42;//此时识别的单词是浮点数 
 						}
 					}
@@ -171,7 +171,7 @@ int getToken()//返回下一个TOKEN的类别码，注释视为Token
 					{
 						ungetc(cc,IN);//退回非数字 
 						ungetc(cc,IN);//退回e
-						DOU=atod(TOKEN);//将TOKEN中的字符串转换为浮点数 
+						DOU=atof(TOKEN);//将TOKEN中的字符串转换为浮点数 
 						symbol=42;//此时识别的单词是浮点数 
 					}
 					else//是数字，这部分有效 
@@ -213,7 +213,7 @@ int getToken()//返回下一个TOKEN的类别码，注释视为Token
 						cc=fgetc(IN);
 					}
 					ungetc(cc,IN);//退回字符 
-					DOU=atod(TOKEN);//将TOKEN中的字符串转换为浮点数 
+					DOU=atof(TOKEN);//将TOKEN中的字符串转换为浮点数 
 					symbol=42;//此时识别的单词是浮点数 
 				}
 			}
@@ -240,7 +240,7 @@ int getToken()//返回下一个TOKEN的类别码，注释视为Token
 						cc=fgetc(IN);
 					}
 					ungetc(cc,IN);//退回字符 
-					DOU=atod(TOKEN);//将TOKEN中的字符串转换为浮点数 
+					DOU=atof(TOKEN);//将TOKEN中的字符串转换为浮点数 
 					symbol=42;//此时识别的单词是浮点数 
 				}
 			}
@@ -261,7 +261,7 @@ int getToken()//返回下一个TOKEN的类别码，注释视为Token
 					cc=fgetc(IN);
 				}
 				ungetc(cc,IN);//退回字符 
-				DOU=atod(TOKEN);//将TOKEN中的字符串转换为浮点数 
+				DOU=atof(TOKEN);//将TOKEN中的字符串转换为浮点数 
 				symbol=42;//此时识别的单词是浮点数 
 			}
 		}
