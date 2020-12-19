@@ -185,6 +185,11 @@ int getToken()//返回下一个TOKEN的类别码，注释视为Token
 						}
 					}
 				}
+				else
+				{
+					ungetc(cc,IN);
+					symbol=42;
+				}
 			}
 		}
 		else if(cc=='e'||cc=='E')//还有可能，后面接E或e
