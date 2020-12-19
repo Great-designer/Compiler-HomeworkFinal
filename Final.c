@@ -606,7 +606,7 @@ int ty()//类型：仍旧为标识符（51）。不做开头，不得预读
 
 struct instruction//指令结构体 
 {
-	char list[2048];//指令序列
+	char list[4096];//指令序列
 	char count;//指令个数 
 	int length;//指令长度 
 }; 
@@ -741,7 +741,7 @@ struct function//全局函数表
 {
 	int name;//在全局符号表的位置
 	int type;//类型决定返回值有多少个8字节，以及参数表起始位置。void为0，int和double都为8。此处记录0，1和2 
-	struct symboltable param[64];//最多32个参数与返回值。
+	struct symboltable param[64];//最多64个参数与返回值。
 	int paramtop;//参数栈顶。type为1或者2的时候，栈顶先增加一位 
 	int paramcount;//真正参数个数，决定多少个8字节。int和double都为8，故乘8即可。
 	struct symboltable localtable[128];//局部变量表
