@@ -285,6 +285,18 @@ int getToken()//返回下一个TOKEN的类别码，注释视为Token
 			if(cc=='\''||cc=='\"'||cc=='\\'||cc=='n'||cc=='t'||cc=='r')
 			{
 				char tttt=cc;//暂存
+				if(cc=='n')
+				{
+					tttt='\n';
+				}
+				else if(cc=='t')
+				{
+					tttt='\t';
+				}
+				else if(cc=='r')
+				{
+					tttt='\r';
+				}
 				cc=fgetc(IN);
 				if(cc=='\'')//单引号 
 				{
@@ -328,9 +340,35 @@ int getToken()//返回下一个TOKEN的类别码，注释视为Token
 			else if(cc=='\\')//可能是转义 
 			{
 				cc=fgetc(IN);//这时候有可能出错，还要预读 
-				if(cc=='\''||cc=='\"'||cc=='\\'||cc=='n'||cc=='t'||cc=='r')
+				if(cc=='\'')
 				{
-					strncat(TOKEN,&cc,1);
+					char cdcd='\'';
+					strncat(TOKEN,&cdcd,1);
+				}
+				else if(cc=='\"')
+				{
+					char cdcd='\"';
+					strncat(TOKEN,&cdcd,1);
+				}
+				else if(cc=='\\')
+				{
+					char cdcd='\\';
+					strncat(TOKEN,&cdcd,1);
+				}
+				else if(cc=='n')
+				{
+					char cdcd='\n';
+					strncat(TOKEN,&cdcd,1);
+				}
+				else if(cc=='t')
+				{
+					char cdcd='\t';
+					strncat(TOKEN,&cdcd,1);
+				}
+				else if(cc=='r')
+				{
+					char cdcd='\r';
+					strncat(TOKEN,&cdcd,1);
 				}
 				else
 				{
