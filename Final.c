@@ -607,7 +607,7 @@ int ty()//类型：仍旧为标识符（51）。不做开头，不得预读
 struct instruction//指令结构体 
 {
 	char list[4096];//指令序列
-	char count;//指令个数 
+	int count;//指令个数 
 	int length;//指令长度 
 }; 
 
