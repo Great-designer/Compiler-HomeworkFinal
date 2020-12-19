@@ -1137,7 +1137,7 @@ struct expression parse_primary()//½âÎöÒ»Ôª±í´ïÊ½¡£ÕâÀï´¦Àí×óÀ¨ºÅ¡¢º¯Êıµ÷ÓÃ¡¢Ç°Ö
 				returning.instr.list[returning.instr.length]=caca;
 				returning.instr.count++;
 				returning.instr.length++;
-				int bsbs=5;//5ºÅº¯Êı 
+				int bsbs=4;//4ºÅº¯Êı 
 				storeint(bsbs,returning.instr.list,returning.instr.length);
 				returning.instr.length+=4;//Ò»¸ö32Î»Õ¼4¸öchar 
 				return returning;
