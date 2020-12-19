@@ -1747,6 +1747,7 @@ struct instruction bool_expr()//比较的表达式，直接指令即可
 			temp.list[temp.length]=nene;
 			temp.count++;
 			temp.length++;
+			return temp;
 		}
 		else
 		{
