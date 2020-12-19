@@ -2112,9 +2112,6 @@ struct instruction while_stmt()
 					{
 						exit(-1);
 					}
-					bobo=instrcat(bobo,exex.instr);
-					BREAKSTACK[BREAKSTACKTOPTOP-1][BREAKSTACKTOP[BREAKSTACKTOPTOP-1]].count+=exex.instr.count;
-					BREAKSTACK[BREAKSTACKTOPTOP-1][BREAKSTACKTOP[BREAKSTACKTOPTOP-1]].length+=exex.instr.length;
 					rtrt=0x0b;//argc0
 					bobo.list[bobo.length]=rtrt;
 					bobo.count++;
@@ -2125,6 +2122,9 @@ struct instruction while_stmt()
 					storeint(etet,bobo.list,bobo.length);
 					bobo.length+=4;//intΪ4 
 					BREAKSTACK[BREAKSTACKTOPTOP-1][BREAKSTACKTOP[BREAKSTACKTOPTOP-1]].length+=4;
+					bobo=instrcat(bobo,exex.instr);
+					BREAKSTACK[BREAKSTACKTOPTOP-1][BREAKSTACKTOP[BREAKSTACKTOPTOP-1]].count+=exex.instr.count;
+					BREAKSTACK[BREAKSTACKTOPTOP-1][BREAKSTACKTOP[BREAKSTACKTOPTOP-1]].length+=exex.instr.length;
 					rtrt=0x17;//store
 					bobo.list[bobo.length]=rtrt;
 					bobo.count++;
@@ -2347,9 +2347,6 @@ struct instruction block_stmt()
 					{
 						exit(-1);
 					}
-					blbl=instrcat(blbl,exex.instr);
-					BREAKSTACK[BREAKSTACKTOPTOP-1][BREAKSTACKTOP[BREAKSTACKTOPTOP-1]].count+=exex.instr.count;
-					BREAKSTACK[BREAKSTACKTOPTOP-1][BREAKSTACKTOP[BREAKSTACKTOPTOP-1]].length+=exex.instr.length;
 					rtrt=0x0b;//argc0
 					blbl.list[blbl.length]=rtrt;
 					blbl.count++;
@@ -2360,6 +2357,9 @@ struct instruction block_stmt()
 					storeint(etet,blbl.list,blbl.length);
 					blbl.length+=4;//intΪ4 
 					BREAKSTACK[BREAKSTACKTOPTOP-1][BREAKSTACKTOP[BREAKSTACKTOPTOP-1]].length+=4;
+					blbl=instrcat(blbl,exex.instr);
+					BREAKSTACK[BREAKSTACKTOPTOP-1][BREAKSTACKTOP[BREAKSTACKTOPTOP-1]].count+=exex.instr.count;
+					BREAKSTACK[BREAKSTACKTOPTOP-1][BREAKSTACKTOP[BREAKSTACKTOPTOP-1]].length+=exex.instr.length;
 					rtrt=0x17;//store
 					blbl.list[blbl.length]=rtrt;
 					blbl.count++;
