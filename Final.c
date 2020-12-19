@@ -3,7 +3,7 @@
 #include<string.h>
 #include<stdlib.h>
 
-char TOKEN[128];//当前字符串常量（44），或者标识符（51）
+char TOKEN[256];//当前字符串常量（44），或者标识符（51）
 long long NUM;//当前无符号整数（41，语法分析中允许取负） 
 double DOU;//当前无符号浮点数（42，语法分析中允许取负） 
 
@@ -463,7 +463,7 @@ int getToken()//返回下一个TOKEN的类别码，注释视为Token
 }
 
 //TOKEN为字符串（44）或标识符（51），都存储在TOKEN
-char TOKENPRE[128];//预读的字符串常量（44），或者标识符（51）
+char TOKENPRE[256];//预读的字符串常量（44），或者标识符（51）
 
 //TOKEN为整数（41）、浮点数（42）或，存储在NUM、DOU
 long long NUMPRE;//无符号整数（41，语法分析中允许取负） 
@@ -668,7 +668,7 @@ struct symboltable//量结构体。
 	int init;//是否需要初始化 
 }; 
 
-struct symboltable TABLE[128];//全局表。所有的函数名字都要存进去。均不用初始化，就不用存值  
+struct symboltable TABLE[256];//全局表。所有的函数名字都要存进去。均不用初始化，就不用存值  
 int TABLETOP;//表顶下标 
 
 int find_table(char sss[])//根据变量名，顺序查全局符号表。查到返回在表中下标，未查到返回-1。
@@ -703,17 +703,17 @@ struct function//全局函数表
 {
 	int name;//在全局符号表的位置
 	int type;//类型决定返回值有多少个8字节，以及参数表起始位置。void为0，int和double都为8。此处记录0，1和2 
-	struct symboltable param[16];//最多16个参数与返回值。
+	struct symboltable param[32];//最多32个参数与返回值。
 	int paramtop;//参数栈顶。type为1或者2的时候，栈顶先增加一位 
 	int paramcount;//真正参数个数，决定多少个8字节。int和double都为8，故乘8即可。
-	struct symboltable localtable[32];//局部变量表
+	struct symboltable localtable[64];//局部变量表
 	int localtabletop;//局部变量表顶，指示有多少个8字节
-	struct symbolstack localstack[32];//局部变量栈，管理局部变量表
+	struct symbolstack localstack[64];//局部变量栈，管理局部变量表
 	int localstacktop;//局部变量栈顶
 	struct instruction instr;//函数的指令列 
 };
 
-struct function FUNCLIST[64];//最多64个函数吧，让指令集长一点 
+struct function FUNCLIST[128];//最多128个函数吧，让指令集长一点 
 int FUNCLISTTOP;//当前编译器处于编译器编号哪个函数中
 
 int find_func(char sss[])
@@ -1754,7 +1754,7 @@ void const_decl_stmt()
 	{
 		exit(-1);
 	}
-	char* iii=(char *)malloc(sizeof(char)*128);//标识符 
+	char* iii=(char *)malloc(sizeof(char)*256);//标识符 
 	strcpy(iii,TOKEN);
 	tok=nextToken();
 	if(tok!=28)//冒号 
@@ -1824,7 +1824,7 @@ void let_decl_stmt()
 	{
 		exit(-1);
 	}
-	char* iii=(char *)malloc(sizeof(char)*128);
+	char* iii=(char *)malloc(sizeof(char)*256);
 	strcpy(iii,TOKEN);
 	tok=nextToken();
 	if(tok!=28)//冒号 
@@ -1934,8 +1934,8 @@ struct br//偏移结构体，存储最后break的位置。这个栈记录指令和char长单位
 	int count;//指令数 
 };
 
-struct br BREAKSTACK[32][32];//双重循环栈
-int BREAKSTACKTOP[32];//指示当前循环的栈顶。只有栈顶值是无效的。只要TOPTOP不是0，就要不停地更新维护栈顶值 
+struct br BREAKSTACK[64][64];//双重循环栈
+int BREAKSTACKTOP[64];//指示当前循环的栈顶。只有栈顶值是无效的。只要TOPTOP不是0，就要不停地更新维护栈顶值 
 int BREAKSTACKTOPTOP;//指示在哪个循环。也用于检查是否在循环内 
 
 struct instruction if_stmt();
@@ -2504,7 +2504,7 @@ void function()//函数，以fn（6）开头。规定开头调用前已经被读了，下一个默认是标识
 	{
 		exit(-1);
 	}
-	char* iii=(char *)malloc(sizeof(char)*128);//处理标识符（51）
+	char* iii=(char *)malloc(sizeof(char)*256);//处理标识符（51）
 	strcpy(iii,TOKEN);
 	int fff=find_now(iii,FUNCLISTTOP);
 	if(fff!=-1)//表里能查到 
