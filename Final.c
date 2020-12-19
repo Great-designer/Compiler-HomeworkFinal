@@ -741,12 +741,12 @@ struct function//全局函数表
 {
 	int name;//在全局符号表的位置
 	int type;//类型决定返回值有多少个8字节，以及参数表起始位置。void为0，int和double都为8。此处记录0，1和2 
-	struct symboltable param[32];//最多32个参数与返回值。
+	struct symboltable param[64];//最多32个参数与返回值。
 	int paramtop;//参数栈顶。type为1或者2的时候，栈顶先增加一位 
 	int paramcount;//真正参数个数，决定多少个8字节。int和double都为8，故乘8即可。
-	struct symboltable localtable[64];//局部变量表
+	struct symboltable localtable[128];//局部变量表
 	int localtabletop;//局部变量表顶，指示有多少个8字节
-	struct symbolstack localstack[64];//局部变量栈，管理局部变量表
+	struct symbolstack localstack[128];//局部变量栈，管理局部变量表
 	int localstacktop;//局部变量栈顶
 	struct instruction instr;//函数的指令列 
 };
@@ -2457,10 +2457,8 @@ struct instruction if_stmt()
 	fifi.length+=4;//一个32位占4个char 
 	BREAKSTACK[BREAKSTACKTOPTOP-1][BREAKSTACKTOP[BREAKSTACKTOPTOP-1]].count+=fifi.count;//要实现嵌套跳转，同步记录栈顶值位置，保持始终与主结构体行为相同 
 	BREAKSTACK[BREAKSTACKTOPTOP-1][BREAKSTACKTOP[BREAKSTACKTOPTOP-1]].length+=fifi.length;
-	struct instruction bsbs=block_stmt();//if后面自带一个block 
+	struct instruction bsbs=block_stmt();//if后面自带一个block。break行为。内部已经同步更新，无需再加，只拼接即可 
 	fifi=instrcat(fifi,bsbs);
-	BREAKSTACK[BREAKSTACKTOPTOP-1][BREAKSTACKTOP[BREAKSTACKTOPTOP-1]].count+=bsbs.count;//要实现嵌套跳转，同步记录栈顶值位置，保持始终与主结构体行为相同 
-	BREAKSTACK[BREAKSTACKTOPTOP-1][BREAKSTACKTOP[BREAKSTACKTOPTOP-1]].length+=bsbs.length;
 	int next=nextToken();//零次或多次的elseif，零次或一次的else 
 	while(next==5)//有else
 	{
@@ -2495,10 +2493,8 @@ struct instruction if_stmt()
 			storeint(phph,fifi.list,fifi.length);
 			fifi.length+=4;//一个32位占4个char 
 			BREAKSTACK[BREAKSTACKTOPTOP-1][BREAKSTACKTOP[BREAKSTACKTOPTOP-1]].length+=4;
-			bsbs=block_stmt();//新区块 
+			bsbs=block_stmt();//新区块。break行为。内部已经同步更新，无需再加，只拼接即可 
 			fifi=instrcat(fifi,bsbs);
-			BREAKSTACK[BREAKSTACKTOPTOP-1][BREAKSTACKTOP[BREAKSTACKTOPTOP-1]].count+=bsbs.count;//要实现嵌套跳转，同步记录栈顶值位置，保持始终与主结构体行为相同 
-			BREAKSTACK[BREAKSTACKTOPTOP-1][BREAKSTACKTOP[BREAKSTACKTOPTOP-1]].length+=bsbs.length;
 			next=nextToken();//再读一个 
 		}
 		else if(next==25)//直接block了 
@@ -2508,10 +2504,8 @@ struct instruction if_stmt()
 			storeint(boolbr,fifi.list,kbkb.length);
 			kbkb.count=-1;
 			kbkb.length=-1;
-			bsbs=block_stmt();
+			bsbs=block_stmt();//break行为。内部已经同步更新，无需再加，只拼接即可  
 			fifi=instrcat(fifi,bsbs);
-			BREAKSTACK[BREAKSTACKTOPTOP-1][BREAKSTACKTOP[BREAKSTACKTOPTOP-1]].count+=bsbs.count;//要实现嵌套跳转，同步记录栈顶值位置，保持始终与主结构体行为相同 
-			BREAKSTACK[BREAKSTACKTOPTOP-1][BREAKSTACKTOP[BREAKSTACKTOPTOP-1]].length+=bsbs.length;
 			next=nextToken();//再读一个，末尾回退
 			break; 
 		}
