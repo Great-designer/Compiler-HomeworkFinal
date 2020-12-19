@@ -1656,11 +1656,15 @@ struct expression expr()//解析表达式
 struct instruction bool_expr()//比较的表达式，直接指令即可 
 {
 	struct expression lhs=expr();
+	if(lhs.type==0)
+	{
+		exit(-1);
+	}
 	int next=nextToken();
-	if(next==30||next==34||next==35||next==37||next==38||next==39)//可能是就一个表达式 
+	if(next==30||next==34||next==35||next==37||next==38||next==39)
 	{
 		struct expression rhs=expr();
-		if(lhs.type!=rhs.type||lhs.type==0||rhs.type==0)//先检查左右两边type是否一致或是否为0 
+		if(lhs.type!=rhs.type||rhs.type==0)//先检查左右两边type是否一致或是否为0 
 		{
 			exit(-1);//有问题 
 		}
@@ -1749,25 +1753,10 @@ struct instruction bool_expr()//比较的表达式，直接指令即可
 			exit(-1);
 		}
 	}
-	else
+	else//可能是就一个表达式 
 	{
 		unreadToken();//退回 
-		if(lhs.type==0)
-		{
-			exit(-1);
-		}
-		struct instruction temp=lhs.instr;//浮点0也是0，但有可能有符号位。因此左移1位
-		char nene=0x01;//要先push一个1进去 
-		temp.list[temp.length]=nene;
-		temp.count++;
-		temp.length++;//光标先移动才能放long 
-		long long phph=1; 
-		storelong(&phph,temp.list,temp.length);
-		temp.length+=8;//一个64位占8个char 
-		nene=0x29;//左移 
-		temp.list[temp.length]=nene;
-		temp.count++;
-		temp.length++;
+		struct instruction temp=lhs.instr;
 		return temp; 
 	}
 }
