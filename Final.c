@@ -2018,6 +2018,7 @@ struct instruction while_stmt()
 		FUNCLIST[FUNCLISTTOP].localstack[fafa-1].istop++;//前一层顶，后一层栈底前 
 	}
 	struct instruction cscs; 
+	char ymym;
 	char rtrt;
 	int etet;
 	next=nextToken();
@@ -2027,9 +2028,48 @@ struct instruction while_stmt()
 		{
 			case 3://不回退 
 				const_decl_stmt();//不生成指令序列 
+				ymym=0x0a;//加载局部指令 
+				bobo.list[bobo.length]=ymym;
+				bobo.count++;
+				bobo.length++;//光标先移动
+				BREAKSTACK[BREAKSTACKTOPTOP-1][BREAKSTACKTOP[BREAKSTACKTOPTOP-1]].count++;
+				BREAKSTACK[BREAKSTACKTOPTOP-1][BREAKSTACKTOP[BREAKSTACKTOPTOP-1]].length++;
+				storeint(FUNCLIST[FUNCLISTTOP].localtabletop-1,bobo.list,bobo.length);//局部变量编号 
+				bobo.length+=4;//一个32位占4个char 
+				BREAKSTACK[BREAKSTACKTOPTOP-1][BREAKSTACKTOP[BREAKSTACKTOPTOP-1]].length+=4;
+				bobo=instrcat(bobo,FUNCLIST[FUNCLISTTOP].localtable[FUNCLIST[FUNCLISTTOP].localtabletop-1].instr);
+				BREAKSTACK[BREAKSTACKTOPTOP-1][BREAKSTACKTOP[BREAKSTACKTOPTOP-1]].count+=FUNCLIST[FUNCLISTTOP].localtable[FUNCLIST[FUNCLISTTOP].localtabletop-1].instr.count;
+				BREAKSTACK[BREAKSTACKTOPTOP-1][BREAKSTACKTOP[BREAKSTACKTOPTOP-1]].length+=FUNCLIST[FUNCLISTTOP].localtable[FUNCLIST[FUNCLISTTOP].localtabletop-1].instr.length;
+				ymym=0x17;//store
+				bobo.list[bobo.length]=ymym;
+				bobo.count++;
+				bobo.length++;
+				BREAKSTACK[BREAKSTACKTOPTOP-1][BREAKSTACKTOP[BREAKSTACKTOPTOP-1]].count++;
+				BREAKSTACK[BREAKSTACKTOPTOP-1][BREAKSTACKTOP[BREAKSTACKTOPTOP-1]].length++;
 			break;
 			case 8://不回退 
 				let_decl_stmt();//不生成指令序列 
+				if(FUNCLIST[FUNCLISTTOP].localtable[FUNCLIST[FUNCLISTTOP].localtabletop-1].init==1)//还在顶。要再定义一遍 
+				{
+					ymym=0x0a;//加载局部指令 
+					bobo.list[bobo.length]=ymym;
+					bobo.count++;
+					bobo.length++;//光标先移动
+					BREAKSTACK[BREAKSTACKTOPTOP-1][BREAKSTACKTOP[BREAKSTACKTOPTOP-1]].count++;
+					BREAKSTACK[BREAKSTACKTOPTOP-1][BREAKSTACKTOP[BREAKSTACKTOPTOP-1]].length++;
+					storeint(FUNCLIST[FUNCLISTTOP].localtabletop-1,bobo.list,bobo.length);//局部变量编号 
+					bobo.length+=4;//一个32位占4个char 
+					BREAKSTACK[BREAKSTACKTOPTOP-1][BREAKSTACKTOP[BREAKSTACKTOPTOP-1]].length+=4;
+					bobo=instrcat(bobo,FUNCLIST[FUNCLISTTOP].localtable[FUNCLIST[FUNCLISTTOP].localtabletop-1].instr);
+					BREAKSTACK[BREAKSTACKTOPTOP-1][BREAKSTACKTOP[BREAKSTACKTOPTOP-1]].count+=FUNCLIST[FUNCLISTTOP].localtable[FUNCLIST[FUNCLISTTOP].localtabletop-1].instr.count;
+					BREAKSTACK[BREAKSTACKTOPTOP-1][BREAKSTACKTOP[BREAKSTACKTOPTOP-1]].length+=FUNCLIST[FUNCLISTTOP].localtable[FUNCLIST[FUNCLISTTOP].localtabletop-1].instr.length;
+					ymym=0x17;//store
+					bobo.list[bobo.length]=ymym;
+					bobo.count++;
+					bobo.length++;
+					BREAKSTACK[BREAKSTACKTOPTOP-1][BREAKSTACKTOP[BREAKSTACKTOPTOP-1]].count++;
+					BREAKSTACK[BREAKSTACKTOPTOP-1][BREAKSTACKTOP[BREAKSTACKTOPTOP-1]].length++;
+				}
 			break;
 			case 7://不回退 
 				cscs=if_stmt();//break行为
@@ -2243,6 +2283,7 @@ struct instruction block_stmt()
 		FUNCLIST[FUNCLISTTOP].localstack[fafa-1].istop++;//前一层顶，后一层栈底前 
 	}
 	struct instruction cscs;
+	char ymym;
 	int phph;
 	int flfl;
 	char rtrt;
@@ -2254,9 +2295,48 @@ struct instruction block_stmt()
 		{
 			case 3://不回退 
 				const_decl_stmt();//不生成指令序列 
+				ymym=0x0a;//加载局部指令 
+				blbl.list[blbl.length]=ymym;
+				blbl.count++;
+				blbl.length++;//光标先移动
+				BREAKSTACK[BREAKSTACKTOPTOP-1][BREAKSTACKTOP[BREAKSTACKTOPTOP-1]].count++;
+				BREAKSTACK[BREAKSTACKTOPTOP-1][BREAKSTACKTOP[BREAKSTACKTOPTOP-1]].length++;
+				storeint(FUNCLIST[FUNCLISTTOP].localtabletop-1,blbl.list,blbl.length);//局部变量编号 
+				blbl.length+=4;//一个32位占4个char 
+				BREAKSTACK[BREAKSTACKTOPTOP-1][BREAKSTACKTOP[BREAKSTACKTOPTOP-1]].length+=4;
+				blbl=instrcat(blbl,FUNCLIST[FUNCLISTTOP].localtable[FUNCLIST[FUNCLISTTOP].localtabletop-1].instr);
+				BREAKSTACK[BREAKSTACKTOPTOP-1][BREAKSTACKTOP[BREAKSTACKTOPTOP-1]].count+=FUNCLIST[FUNCLISTTOP].localtable[FUNCLIST[FUNCLISTTOP].localtabletop-1].instr.count;
+				BREAKSTACK[BREAKSTACKTOPTOP-1][BREAKSTACKTOP[BREAKSTACKTOPTOP-1]].length+=FUNCLIST[FUNCLISTTOP].localtable[FUNCLIST[FUNCLISTTOP].localtabletop-1].instr.length;
+				ymym=0x17;//store
+				blbl.list[blbl.length]=ymym;
+				blbl.count++;
+				blbl.length++;
+				BREAKSTACK[BREAKSTACKTOPTOP-1][BREAKSTACKTOP[BREAKSTACKTOPTOP-1]].count++;
+				BREAKSTACK[BREAKSTACKTOPTOP-1][BREAKSTACKTOP[BREAKSTACKTOPTOP-1]].length++;
 			break;
 			case 8://不回退 
 				let_decl_stmt();//不生成指令序列 
+				if(FUNCLIST[FUNCLISTTOP].localtable[FUNCLIST[FUNCLISTTOP].localtabletop-1].init==1)//还在顶。要再定义一遍 
+				{
+					ymym=0x0a;//加载局部指令 
+					blbl.list[blbl.length]=ymym;
+					blbl.count++;
+					blbl.length++;//光标先移动
+					BREAKSTACK[BREAKSTACKTOPTOP-1][BREAKSTACKTOP[BREAKSTACKTOPTOP-1]].count++;
+					BREAKSTACK[BREAKSTACKTOPTOP-1][BREAKSTACKTOP[BREAKSTACKTOPTOP-1]].length++;
+					storeint(FUNCLIST[FUNCLISTTOP].localtabletop-1,blbl.list,blbl.length);//局部变量编号 
+					blbl.length+=4;//一个32位占4个char 
+					BREAKSTACK[BREAKSTACKTOPTOP-1][BREAKSTACKTOP[BREAKSTACKTOPTOP-1]].length+=4;
+					blbl=instrcat(blbl,FUNCLIST[FUNCLISTTOP].localtable[FUNCLIST[FUNCLISTTOP].localtabletop-1].instr);
+					BREAKSTACK[BREAKSTACKTOPTOP-1][BREAKSTACKTOP[BREAKSTACKTOPTOP-1]].count+=FUNCLIST[FUNCLISTTOP].localtable[FUNCLIST[FUNCLISTTOP].localtabletop-1].instr.count;
+					BREAKSTACK[BREAKSTACKTOPTOP-1][BREAKSTACKTOP[BREAKSTACKTOPTOP-1]].length+=FUNCLIST[FUNCLISTTOP].localtable[FUNCLIST[FUNCLISTTOP].localtabletop-1].instr.length;
+					ymym=0x17;//store
+					blbl.list[blbl.length]=ymym;
+					blbl.count++;
+					blbl.length++;
+					BREAKSTACK[BREAKSTACKTOPTOP-1][BREAKSTACKTOP[BREAKSTACKTOPTOP-1]].count++;
+					BREAKSTACK[BREAKSTACKTOPTOP-1][BREAKSTACKTOP[BREAKSTACKTOPTOP-1]].length++;
+				}
 			break;
 			case 7://不回退 
 				cscs=if_stmt();//break行为。内部已经同步更新，无需再加，只拼接即可 
