@@ -2611,6 +2611,13 @@ void function()//函数，以fn（6）开头。规定开头调用前已经被读了，下一个默认是标识
 		efef.length++;
 	}
 	FUNCLIST[FUNCLISTTOP].instr=instrcat(efef,FUNCLIST[FUNCLISTTOP].instr);//初始化部分接到前面 
+	if(FUNCLIST[FUNCLISTTOP].type==0)//void类型末尾再补一个ret
+	{
+		char vovo=0x49;//ret
+		FUNCLIST[FUNCLISTTOP].instr.list[FUNCLIST[FUNCLISTTOP].instr.length]=vovo;
+		FUNCLIST[FUNCLISTTOP].instr.count++;
+		FUNCLIST[FUNCLISTTOP].instr.length++;
+	}
 	FUNCLISTTOP++;//编译器最后才跳出当前函数 
 }
 
