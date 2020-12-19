@@ -2234,7 +2234,7 @@ struct instruction while_stmt()
 		{
 			FUNCLIST[FUNCLISTTOP].localstack[fafa].istop--;
 		}
-		FUNCLIST[FUNCLISTTOP].localstacktop==fafa+1;//否则fafa是-1，这个式子也没错 
+		FUNCLIST[FUNCLISTTOP].localstacktop=fafa+1;//否则fafa是-1，这个式子也没错 
 	}
 	flfl=0x41;//相当于最后还有一个continue 
 	bobo.list[bobo.length]=flfl;
