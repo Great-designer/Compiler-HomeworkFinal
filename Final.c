@@ -187,6 +187,7 @@ int getToken()//返回下一个TOKEN的类别码，注释视为Token
 				}
 				else
 				{
+					DOU=atof(TOKEN);
 					ungetc(cc,IN);
 					symbol=42;
 				}
