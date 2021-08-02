@@ -178,7 +178,7 @@ int getToken()//·µ»ØÏÂÒ»¸öTOKENµÄÀà±ðÂë£¬×¢ÊÍÊÓÎªToken
 					{
 						char eee='e'; 
 						strncat(TOKEN,&eee,1);//ÏÈ½ÓÒ»¸öe£¬ÒòÎªccÒÑ¾­ÊÇÊý×ÖÁË 
-						while(isdigit(cc))
+						while(1)
 						{
 							strncat(TOKEN,&cc,1);
 							cc=fgetc(IN);
@@ -706,7 +706,7 @@ struct symboltable//Á¿½á¹¹Ìå¡£
 {
 	char name[128];//Ãû×Ö£¬³ýÁË´¿×Ö·û´®Íâ²»¿ÉÖØ¸´¡£typeÎª0Ê±ÓÐÐ§£¬ÐèÒªÐ´½øÈ«¾Ö³õÊ¼»¯²¿·Ö¡£¿ÉÒÔstrlen 
 	char isconst;//ÊÇ³£ÊýÎª1£¬²»ÊÇ³£ÊýÎª0£¨Êä³ö³¤¶ÈÎª8£© 
-	int valid;//Î´³õÊ¼»¯Îª0£¬³õÊ¼»¯Îª1 
+    //Î´³õÊ¼»¯Îª0£¬³õÊ¼»¯Îª1
 	int type;//1Îªint£¬2Îªdouble£¨¶¼ÊÇ64£©£¬0Îªvoid×Ö·û´®£¨º¯ÊýÃû»òÕß×Ö·û´®£©¡£intºÍdoubleµÄ³õÊ¼»¯¶¼ÔÚ_startÖÐ 
 	struct instruction instr;//³õÊ¼»¯Ö¸Áî¡£½öÈ«¾ÖÎªvoid×Ö·û´®Ê±ÎÞÖ¸Áî 
 	int init;//ÊÇ·ñÐèÒª³õÊ¼»¯ 
@@ -884,8 +884,7 @@ struct expression parse_primary()//½âÎöÒ»Ôª±í´ïÊ½¡£ÕâÀï´¦Àí×óÀ¨ºÅ¡¢º¯Êýµ÷ÓÃ¡¢Ç°Ö
 		{
 			nene=0x34;
 		}
-		else if(temp.type==2)//¸¡µã
-		{
+		else {
 			nene=0x35;
 		}
 		temp.instr.list[temp.instr.length]=nene;
@@ -967,7 +966,7 @@ struct expression parse_primary()//½âÎöÒ»Ôª±í´ïÊ½¡£ÕâÀï´¦Àí×óÀ¨ºÅ¡¢º¯Êýµ÷ÓÃ¡¢Ç°Ö
 							returning.instr.list[returning.instr.length]=intj;
 							returning.instr.count++;
 							returning.instr.length++;
-							TABLE[finding].valid=1;//ÒÑ¸³Öµ£¬ÓÐÐ§ 
+                            //ÒÑ¸³Öµ£¬ÓÐÐ§
 							return returning;
 						}
 					}
@@ -992,7 +991,7 @@ struct expression parse_primary()//½âÎöÒ»Ôª±í´ïÊ½¡£ÕâÀï´¦Àí×óÀ¨ºÅ¡¢º¯Êýµ÷ÓÃ¡¢Ç°Ö
 						returning.instr.list[returning.instr.length]=intj;
 						returning.instr.count++;
 						returning.instr.length++;
-						FUNCLIST[FUNCLISTTOP].param[finding].valid=1;//ÒÑ¸³Öµ£¬ÓÐÐ§ 
+                        //ÒÑ¸³Öµ£¬ÓÐÐ§
 						return returning;
 					}
 				}
@@ -1017,7 +1016,7 @@ struct expression parse_primary()//½âÎöÒ»Ôª±í´ïÊ½¡£ÕâÀï´¦Àí×óÀ¨ºÅ¡¢º¯Êýµ÷ÓÃ¡¢Ç°Ö
 					returning.instr.list[returning.instr.length]=intj;
 					returning.instr.count++;
 					returning.instr.length++;
-					FUNCLIST[FUNCLISTTOP].localtable[finding].valid=1;//ÒÑ¸³Öµ£¬ÓÐÐ§ 
+                    //ÒÑ¸³Öµ£¬ÓÐÐ§
 					return returning;
 				}
 			}
@@ -1192,7 +1191,7 @@ struct expression parse_primary()//½âÎöÒ»Ôª±í´ïÊ½¡£ÕâÀï´¦Àí×óÀ¨ºÅ¡¢º¯Êýµ÷ÓÃ¡¢Ç°Ö
 				strcpy(TABLE[TABLETOP].name,TOKEN);
 				TABLE[TABLETOP].isconst=1;//×Ö·û´®¶¼ÊÇ³£Á¿ 
 				TABLE[TABLETOP].type=0;//void
-				TABLE[TABLETOP].valid=1;//ÓÐÐ§
+                //ÓÐÐ§
 				TABLETOP++; 
 				riri=nextToken();//ÓÒÀ¨ºÅ
 				if(riri!=24)
@@ -1259,7 +1258,7 @@ struct expression parse_primary()//½âÎöÒ»Ôª±í´ïÊ½¡£ÕâÀï´¦Àí×óÀ¨ºÅ¡¢º¯Êýµ÷ÓÃ¡¢Ç°Ö
 					{
 						exit(-1);
 					}
-					struct expression ysys=expr();//´¦ÀíµÚfhfh-ouou¸öexpr
+                    ysys= expr();//´¦ÀíµÚfhfh-ouou¸öexpr
 					if(ysys.type!=FUNCLIST[wewe].param[fhfh-ouou].type)//ÀàÐÍ²»Æ¥Åä 
 					{
 						exit(-1); 
@@ -1897,8 +1896,7 @@ void const_decl_stmt()
 		memset(&TABLE[TABLETOP],0,sizeof(struct symboltable));//ÌîÖ®Ç°ÏÈÇå¿ÕÕâÒ»¸ñ£¬ÒÔÃâ³ö´í 
 		strcpy(TABLE[TABLETOP].name,iii);
 		TABLE[TABLETOP].isconst=1;
-		TABLE[TABLETOP].valid=1;
-		TABLE[TABLETOP].init=1; 
+        TABLE[TABLETOP].init=1;
 		TABLE[TABLETOP].type=typpp;
 		TABLE[TABLETOP].instr=instrcat(TABLE[TABLETOP].instr,ucuc.instr);//¸ã¶¨³õÊ¼»¯Ö¸Áî 
 		TABLETOP++;
@@ -1916,8 +1914,7 @@ void const_decl_stmt()
 		memset(&FUNCLIST[FUNCLISTTOP].localtable[FUNCLIST[FUNCLISTTOP].localtabletop],0,sizeof(struct symboltable));
 		strcpy(FUNCLIST[FUNCLISTTOP].localtable[FUNCLIST[FUNCLISTTOP].localtabletop].name,iii);
 		FUNCLIST[FUNCLISTTOP].localtable[FUNCLIST[FUNCLISTTOP].localtabletop].isconst=1;
-		FUNCLIST[FUNCLISTTOP].localtable[FUNCLIST[FUNCLISTTOP].localtabletop].valid=1;
-		FUNCLIST[FUNCLISTTOP].localtable[FUNCLIST[FUNCLISTTOP].localtabletop].init=1;
+        FUNCLIST[FUNCLISTTOP].localtable[FUNCLIST[FUNCLISTTOP].localtabletop].init=1;
 		FUNCLIST[FUNCLISTTOP].localtable[FUNCLIST[FUNCLISTTOP].localtabletop].type=typpp;
 		FUNCLIST[FUNCLISTTOP].localtable[FUNCLIST[FUNCLISTTOP].localtabletop].instr=instrcat(FUNCLIST[FUNCLISTTOP].localtable[FUNCLIST[FUNCLISTTOP].localtabletop].instr,ucuc.instr);
 		FUNCLIST[FUNCLISTTOP].localtabletop++;//²ÎÁ¿±íÌîÐ´Íê±Ï 
@@ -1964,8 +1961,7 @@ void let_decl_stmt()
 			memset(&TABLE[TABLETOP],0,sizeof(struct symboltable));//ÌîÖ®Ç°ÏÈÇå¿ÕÕâÒ»¸ñ£¬ÒÔÃâ³ö´í 
 			strcpy(TABLE[TABLETOP].name,iii);
 			TABLE[TABLETOP].type=typpp;
-			TABLE[TABLETOP].valid=1;
-			TABLE[TABLETOP].init=1;
+            TABLE[TABLETOP].init=1;
 			TABLE[TABLETOP].instr=instrcat(TABLE[TABLETOP].instr,ucuc.instr);//¸ã¶¨³õÊ¼»¯Ö¸Áî 
 			TABLETOP++;
 		}
@@ -1982,8 +1978,7 @@ void let_decl_stmt()
 			memset(&FUNCLIST[FUNCLISTTOP].localtable[FUNCLIST[FUNCLISTTOP].localtabletop],0,sizeof(struct symboltable));
 			strcpy(FUNCLIST[FUNCLISTTOP].localtable[FUNCLIST[FUNCLISTTOP].localtabletop].name,iii);
 			FUNCLIST[FUNCLISTTOP].localtable[FUNCLIST[FUNCLISTTOP].localtabletop].type=typpp;
-			FUNCLIST[FUNCLISTTOP].localtable[FUNCLIST[FUNCLISTTOP].localtabletop].valid=1;
-			FUNCLIST[FUNCLISTTOP].localtable[FUNCLIST[FUNCLISTTOP].localtabletop].init=1;
+            FUNCLIST[FUNCLISTTOP].localtable[FUNCLIST[FUNCLISTTOP].localtabletop].init=1;
 			FUNCLIST[FUNCLISTTOP].localtable[FUNCLIST[FUNCLISTTOP].localtabletop].instr=instrcat(FUNCLIST[FUNCLISTTOP].localtable[FUNCLIST[FUNCLISTTOP].localtabletop].instr,ucuc.instr);
 			FUNCLIST[FUNCLISTTOP].localtabletop++;//²ÎÁ¿±íÌîÐ´Íê±Ï 
 		}
@@ -2742,8 +2737,7 @@ void function()//º¯Êý£¬ÒÔfn£¨6£©¿ªÍ·¡£¹æ¶¨¿ªÍ·µ÷ÓÃÇ°ÒÑ¾­±»¶ÁÁË£¬ÏÂÒ»¸öÄ¬ÈÏÊÇ±êÊ¶
 				exit(-1);
 			}
 			FUNCLIST[FUNCLISTTOP].param[FUNCLIST[FUNCLISTTOP].paramtop].type=functyty;
-			FUNCLIST[FUNCLISTTOP].param[FUNCLIST[FUNCLISTTOP].paramtop].valid=1;
-			FUNCLIST[FUNCLISTTOP].paramtop++;
+            FUNCLIST[FUNCLISTTOP].paramtop++;
 			FUNCLIST[FUNCLISTTOP].paramcount++;
 			next=nextToken();//ÓÒÐ¡À¨ºÅ»ò¶ººÅ
 			if(next!=24&&next!=27)
@@ -2974,22 +2968,6 @@ void outint(int temp)
     OUTINT[2]=(char)((temp>> 8) & 0x000000ff);
     OUTINT[3]=(char)((temp>> 0) & 0x000000ff);
     fwrite(OUTINT,sizeof(char),4,OUT);
-}
-
-char OUTDOUBLE[8];
-
-void outdouble(double *temp)
-{
-	long long* pr=(long long*)temp;
-	OUTDOUBLE[0]=(char)((*pr>>56) & 0x00000000000000ffLL);
-    OUTDOUBLE[1]=(char)((*pr>>48) & 0x00000000000000ffLL);
-    OUTDOUBLE[2]=(char)((*pr>>40) & 0x00000000000000ffLL);
-    OUTDOUBLE[3]=(char)((*pr>>32) & 0x00000000000000ffLL);
-	OUTDOUBLE[4]=(char)((*pr>>24) & 0x00000000000000ffLL);
-    OUTDOUBLE[5]=(char)((*pr>>16) & 0x00000000000000ffLL);
-    OUTDOUBLE[6]=(char)((*pr>> 8) & 0x00000000000000ffLL);
-    OUTDOUBLE[7]=(char)((*pr>> 0) & 0x00000000000000ffLL);
-    fwrite(OUTDOUBLE,sizeof(char),8,OUT);
 }
 
 int main(int argc,char *argv[])
